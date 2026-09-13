@@ -29,7 +29,9 @@ class CvCatalogRepository {
     );
 
     return CvCatalogRepository(
-      DioCvCatalogService(dio: dio),
+      DioCvCatalogService(
+        dio: dio,
+      ),
     );
   }
 
@@ -51,11 +53,19 @@ class CvCatalogRepository {
     );
   }
 
-  Future<List<int>> getCvPdf(String cvId) {
-    return service.fetchCvPdf(cvId);
+  Future<List<int>> getCvPdf(
+      String cvId,
+      ) {
+    return service.fetchCvPdf(
+      cvId,
+    );
   }
 
-  void clearCountryCache(String countryId) {
-    service.clearCountryCache(countryId);
+  void clearCountryCache(
+      String countryId,
+      ) {
+    service.clearCountryCache(
+      countryId,
+    );
   }
 }

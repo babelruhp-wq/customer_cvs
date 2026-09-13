@@ -26,42 +26,34 @@ class CountriesScreen extends StatelessWidget {
               builder: (context, state) {
                 if (state.countriesStatus == LoadStatus.loading &&
                     state.countries.isEmpty) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
+                  return const Center(child: CircularProgressIndicator());
                 }
 
                 if (state.countriesStatus == LoadStatus.failure &&
                     state.countries.isEmpty) {
                   return _ErrorState(
                     message: state.error ?? 'تعذر تحميل الدول',
-                    onRetry:
-                    context.read<CvCatalogCubit>().loadCountries,
+                    onRetry: context.read<CvCatalogCubit>().loadCountries,
                   );
                 }
 
                 return RefreshIndicator(
-                  onRefresh:
-                  context.read<CvCatalogCubit>().loadCountries,
+                  onRefresh: context.read<CvCatalogCubit>().loadCountries,
                   child: CustomScrollView(
-                    physics:
-                    const AlwaysScrollableScrollPhysics(),
+                    physics: const AlwaysScrollableScrollPhysics(),
                     slivers: [
                       // ==================================================
                       // HERO
                       // ==================================================
-
                       SliverToBoxAdapter(
                         child: _HeroSection(
-                          countriesCount:
-                          state.countries.length,
+                          countriesCount: state.countries.length,
                         ),
                       ),
 
                       // ==================================================
                       // COUNTRIES HEADER
                       // ==================================================
-
                       const SliverToBoxAdapter(
                         child: _CountriesSectionHeader(),
                       ),
@@ -69,66 +61,43 @@ class CountriesScreen extends StatelessWidget {
                       // ==================================================
                       // COUNTRIES GRID
                       // ==================================================
-
                       SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(
-                          24,
-                          0,
-                          24,
-                          44,
-                        ),
+                        padding: const EdgeInsets.fromLTRB(24, 0, 24, 44),
                         sliver: SliverLayoutBuilder(
                           builder: (context, constraints) {
-                            final width =
-                                constraints.crossAxisExtent;
+                            final width = constraints.crossAxisExtent;
 
-                            final maxExtent =
-                            width < 580
-                                ? width
-                                : 325.0;
-
+                            final maxExtent = width < 580 ? width : 385.0;
                             return SliverGrid(
-                              delegate:
-                              SliverChildBuilderDelegate(
-                                    (context, index) {
-                                  final country =
-                                  state.countries[index];
+                              delegate: SliverChildBuilderDelegate((
+                                context,
+                                index,
+                              ) {
+                                final country = state.countries[index];
 
-                                  return CountryCard(
-                                    country: country,
-                                    onTap: () {
-                                      context
-                                          .read<CvCatalogCubit>()
-                                          .selectCountry(
-                                        country,
-                                      );
+                                return CountryCard(
+                                  country: country,
+                                  onTap: () {
+                                    context
+                                        .read<CvCatalogCubit>()
+                                        .selectCountry(country);
 
-                                      Navigator.of(
-                                        context,
-                                      ).push(
-                                        MaterialPageRoute<void>(
-                                          builder: (_) =>
-                                          const CountryCvsScreen(),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                                childCount:
-                                state.countries.length,
-                              ),
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute<void>(
+                                        builder: (_) =>
+                                            const CountryCvsScreen(),
+                                      ),
+                                    );
+                                  },
+                                );
+                              }, childCount: state.countries.length),
                               gridDelegate:
-                              SliverGridDelegateWithMaxCrossAxisExtent(
-                                maxCrossAxisExtent:
-                                maxExtent,
-
-                                // زودنا ارتفاع الكارد
-                                // لاستيعاب عدد السير وحالة الانتظار
-                                mainAxisExtent: 345,
-
-                                mainAxisSpacing: 22,
-                                crossAxisSpacing: 22,
-                              ),
+                                  SliverGridDelegateWithMaxCrossAxisExtent(
+                                    maxCrossAxisExtent: maxExtent,
+                                    mainAxisExtent: 415,
+                                    mainAxisSpacing: 26,
+                                    crossAxisSpacing: 26,
+                                  ),
                             );
                           },
                         ),
@@ -137,26 +106,17 @@ class CountriesScreen extends StatelessWidget {
                       // ==================================================
                       // HELP
                       // ==================================================
-
-                      const SliverToBoxAdapter(
-                        child: _HelpSection(),
-                      ),
+                      const SliverToBoxAdapter(child: _HelpSection()),
 
                       // ==================================================
                       // TRUST
                       // ==================================================
-
-                      const SliverToBoxAdapter(
-                        child: _TrustStrip(),
-                      ),
+                      const SliverToBoxAdapter(child: _TrustStrip()),
 
                       // ==================================================
                       // FOOTER
                       // ==================================================
-
-                      const SliverToBoxAdapter(
-                        child: _Footer(),
-                      ),
+                      const SliverToBoxAdapter(child: _Footer()),
                     ],
                   ),
                 );
@@ -176,98 +136,123 @@ class CountriesScreen extends StatelessWidget {
 class _HeroSection extends StatelessWidget {
   final int countriesCount;
 
-  const _HeroSection({
-    required this.countriesCount,
-  });
+  const _HeroSection({required this.countriesCount});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
-          colors: [
-            Color(0xFF102E5E),
-            Color(0xFF0A2348),
-            Color(0xFF071A36),
-          ],
-          stops: [
-            0.0,
-            .55,
-            1.0,
-          ],
+          colors: [Color(0xFF102E5E), Color(0xFF0A2348), Color(0xFF071A36)],
+          stops: [0.0, .55, 1.0],
         ),
       ),
-
-      child: Stack(
-        children: [
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth:
-                AppLayout.maxContentWidth,
-              ),
-              child: LayoutBuilder(
-                builder: (
-                    context,
-                    constraints,
-                    ) {
-                  final compact =
-                      constraints.maxWidth < 1100;
-
-                  final heroHeight =
-                  compact ? 370.0 : 390.0;
-
-                  final logoWidth =
-                  compact ? 430.0 : 550.0;
-
-                  final contentWidth =
-                  compact ? 560.0 : 690.0;
-
-                  return SizedBox(
-                    height: heroHeight,
-                    child: Stack(
-                      children: [
-                        // ==========================================
-                        // LOGO AREA
-                        // ==========================================
-
-                        Positioned(
-                          left:
-                          compact ? -15 : 0,
-                          top: 15,
-                          bottom: 15,
-                          width: logoWidth,
-                          child:
-                          const _HeroWatermarkLogo(),
-                        ),
-
-                        // ==========================================
-                        // HERO CONTENT
-                        // ==========================================
-
-                        Positioned(
-                          right: 32,
-                          top: 28,
-                          bottom: 28,
-                          width: contentWidth,
-                          child: _HeroContent(
-                            countriesCount:
-                            countriesCount,
-                            compact: compact,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: AppLayout.maxContentWidth,
           ),
-        ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+
+              final mobile = width < 700;
+
+              final tablet = width >= 700 && width < 1050;
+
+              // =============================================
+              // MOBILE
+              // =============================================
+
+              if (mobile) {
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 24, 18, 34),
+                  child: Column(
+                    children: [
+                      const _HeroWatermarkLogo(
+                        width: 280,
+                        height: 210,
+                        logoWidth: 225,
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      _HeroContent(
+                        countriesCount: countriesCount,
+                        mobile: true,
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // =============================================
+              // TABLET
+              // =============================================
+
+              if (tablet) {
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 30, 28, 36),
+                  child: Column(
+                    children: [
+                      const _HeroWatermarkLogo(
+                        width: 360,
+                        height: 245,
+                        logoWidth: 290,
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      _HeroContent(
+                        countriesCount: countriesCount,
+                        tablet: true,
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // =============================================
+              // DESKTOP
+              // =============================================
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 24,
+                ),
+                child: Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        flex: 5,
+                        child: _HeroWatermarkLogo(
+                          width: 520,
+                          height: 350,
+                          logoWidth: 395,
+                        ),
+                      ),
+
+                      const SizedBox(width: 34),
+
+                      Expanded(
+                        flex: 7,
+                        child: Directionality(
+                          textDirection: TextDirection.rtl,
+                          child: _HeroContent(countriesCount: countriesCount),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -278,72 +263,56 @@ class _HeroSection extends StatelessWidget {
 // ==========================================================
 
 class _HeroWatermarkLogo extends StatelessWidget {
-  const _HeroWatermarkLogo();
+  final double width;
+  final double height;
+  final double logoWidth;
+
+  const _HeroWatermarkLogo({
+    this.width = 520,
+    this.height = 350,
+    this.logoWidth = 395,
+  });
 
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: 520,
-            height: 350,
-            decoration: BoxDecoration(
-              borderRadius:
-              BorderRadius.circular(
-                260,
-              ),
-              gradient: RadialGradient(
-                center: const Alignment(
-                  0,
-                  0.12,
+      child: SizedBox(
+        width: width,
+        height: height,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              width: width,
+              height: height,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(width / 2),
+                gradient: RadialGradient(
+                  center: const Alignment(0, 0.12),
+                  radius: .82,
+                  colors: [
+                    AppColors.surface.withValues(alpha: .30),
+                    AppColors.surface.withValues(alpha: .19),
+                    AppColors.secondary.withValues(alpha: .045),
+                    AppColors.surface.withValues(alpha: .035),
+                    AppColors.transparent,
+                  ],
+                  stops: const [0.0, .34, .58, .76, 1.0],
                 ),
-                radius: .82,
-                colors: [
-                  AppColors.surface
-                      .withValues(
-                    alpha: .30,
-                  ),
-                  AppColors.surface
-                      .withValues(
-                    alpha: .19,
-                  ),
-                  AppColors.secondary
-                      .withValues(
-                    alpha: .045,
-                  ),
-                  AppColors.surface
-                      .withValues(
-                    alpha: .035,
-                  ),
-                  AppColors.transparent,
-                ],
-                stops: const [
-                  0.0,
-                  .34,
-                  .58,
-                  .76,
-                  1.0,
-                ],
               ),
             ),
-          ),
 
-          Opacity(
-            opacity: 1,
-            child: SizedBox(
-              width: 395,
-              height: 315,
+            SizedBox(
+              width: logoWidth,
+              height: height * .90,
               child: Image.asset(
                 'assets/images/logo.png',
                 fit: BoxFit.contain,
-                filterQuality:
-                FilterQuality.high,
+                filterQuality: FilterQuality.high,
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -355,54 +324,46 @@ class _HeroWatermarkLogo extends StatelessWidget {
 
 class _HeroContent extends StatelessWidget {
   final int countriesCount;
-  final bool compact;
+  final bool mobile;
+  final bool tablet;
 
   const _HeroContent({
     required this.countriesCount,
-    required this.compact,
+    this.mobile = false,
+    this.tablet = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final centerContent = mobile || tablet;
+
+    final titleSize = mobile
+        ? 28.0
+        : tablet
+        ? 32.0
+        : 39.0;
+
     return Column(
-      mainAxisAlignment:
-      MainAxisAlignment.center,
-      crossAxisAlignment:
-      CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: centerContent
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
       children: [
         Container(
-          padding:
-          const EdgeInsets.symmetric(
-            horizontal: 13,
-            vertical: 7,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
           decoration: BoxDecoration(
-            color: AppColors.surface
-                .withValues(
-              alpha: .075,
-            ),
-            borderRadius:
-            BorderRadius.circular(
-              AppRadius.pill,
-            ),
-            border: Border.all(
-              color: AppColors.surface
-                  .withValues(
-                alpha: .12,
-              ),
-            ),
+            color: AppColors.surface.withValues(alpha: .075),
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            border: Border.all(color: AppColors.surface.withValues(alpha: .12)),
           ),
           child: Row(
-            mainAxisSize:
-            MainAxisSize.min,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 width: 7,
                 height: 7,
-                decoration:
-                const BoxDecoration(
-                  color:
-                  AppColors.secondary,
+                decoration: const BoxDecoration(
+                  color: AppColors.secondary,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -410,11 +371,9 @@ class _HeroContent extends StatelessWidget {
               Text(
                 'بابل الرياض للاستقدام',
                 style: GoogleFonts.cairo(
-                  color:
-                  AppColors.heroTextSoft,
+                  color: AppColors.heroTextSoft,
                   fontSize: 12,
-                  fontWeight:
-                  FontWeight.w800,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ],
@@ -424,15 +383,15 @@ class _HeroContent extends StatelessWidget {
         const SizedBox(height: 17),
 
         Text(
-          'اختر السيرة المناسبة\nبكل سهولة',
+          mobile
+              ? 'اختر السيرة المناسبة\nبكل سهولة'
+              : 'اختر السيرة المناسبة\nبكل سهولة',
+          textAlign: centerContent ? TextAlign.center : TextAlign.start,
           style: GoogleFonts.cairo(
-            color:
-            AppColors.textOnPrimary,
-            fontSize:
-            compact ? 34 : 39,
+            color: AppColors.textOnPrimary,
+            fontSize: titleSize,
             height: 1.30,
-            fontWeight:
-            FontWeight.w900,
+            fontWeight: FontWeight.w900,
           ),
         ),
 
@@ -440,18 +399,20 @@ class _HeroContent extends StatelessWidget {
 
         ConstrainedBox(
           constraints: BoxConstraints(
-            maxWidth:
-            compact ? 540 : 600,
+            maxWidth: mobile
+                ? 430
+                : tablet
+                ? 560
+                : 600,
           ),
           child: Text(
             'استعرض السير الذاتية المتاحة حسب الدولة، واستخدم الفلاتر للوصول إلى الاختيار المناسب لك.',
+            textAlign: centerContent ? TextAlign.center : TextAlign.start,
             style: GoogleFonts.cairo(
-              color:
-              AppColors.heroTextSoft,
-              fontSize: 13.5,
+              color: AppColors.heroTextSoft,
+              fontSize: mobile ? 12.5 : 13.5,
               height: 1.9,
-              fontWeight:
-              FontWeight.w500,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
@@ -459,27 +420,29 @@ class _HeroContent extends StatelessWidget {
         const SizedBox(height: 24),
 
         Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          alignment: centerContent ? WrapAlignment.center : WrapAlignment.start,
+          spacing: 10,
+          runSpacing: 10,
           children: [
             _HeroStat(
-              icon:
-              Icons.public_rounded,
-              value:
-              '$countriesCount',
+              icon: Icons.public_rounded,
+              value: '$countriesCount',
               label: 'دول متاحة',
+              compact: mobile,
             ),
-            const _HeroStat(
-              icon: Icons
-                  .picture_as_pdf_outlined,
+
+            _HeroStat(
+              icon: Icons.picture_as_pdf_outlined,
               value: 'مباشر',
               label: 'عرض السيرة',
+              compact: mobile,
             ),
-            const _HeroStat(
-              icon:
-              Icons.tune_rounded,
+
+            _HeroStat(
+              icon: Icons.tune_rounded,
               value: 'سهل',
               label: 'فلترة سريعة',
+              compact: mobile,
             ),
           ],
         ),
@@ -496,91 +459,61 @@ class _HeroStat extends StatelessWidget {
   final IconData icon;
   final String value;
   final String label;
+  final bool compact;
 
   const _HeroStat({
     required this.icon,
     required this.value,
     required this.label,
+    this.compact = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints:
-      const BoxConstraints(
-        minWidth: 132,
-      ),
-      padding:
-      const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 11,
+      constraints: BoxConstraints(minWidth: compact ? 112 : 132),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 11 : 14,
+        vertical: compact ? 9 : 11,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface
-            .withValues(
-          alpha: .075,
-        ),
-        borderRadius:
-        BorderRadius.circular(
-          AppRadius.md,
-        ),
-        border: Border.all(
-          color: AppColors.surface
-              .withValues(
-            alpha: .11,
-          ),
-        ),
+        color: AppColors.surface.withValues(alpha: .075),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: AppColors.surface.withValues(alpha: .11)),
       ),
       child: Row(
-        mainAxisSize:
-        MainAxisSize.min,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 35,
-            height: 35,
+            width: compact ? 31 : 35,
+            height: compact ? 31 : 35,
             decoration: BoxDecoration(
-              color: AppColors.secondary
-                  .withValues(
-                alpha: .13,
-              ),
-              borderRadius:
-              BorderRadius.circular(
-                AppRadius.sm,
-              ),
+              color: AppColors.secondary.withValues(alpha: .13),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
               border: Border.all(
-                color: AppColors.secondary
-                    .withValues(
-                  alpha: .10,
-                ),
+                color: AppColors.secondary.withValues(alpha: .10),
               ),
             ),
-            alignment:
-            Alignment.center,
+            alignment: Alignment.center,
             child: Icon(
               icon,
-              size: 17,
-              color:
-              AppColors.secondary,
+              size: compact ? 15 : 17,
+              color: AppColors.secondary,
             ),
           ),
 
-          const SizedBox(width: 9),
+          const SizedBox(width: 8),
 
           Column(
-            crossAxisAlignment:
-            CrossAxisAlignment.start,
-            mainAxisSize:
-            MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 value,
-                style:
-                GoogleFonts.cairo(
-                  color: AppColors
-                      .textOnPrimary,
-                  fontSize: 14,
-                  fontWeight:
-                  FontWeight.w900,
+                style: GoogleFonts.cairo(
+                  color: AppColors.textOnPrimary,
+                  fontSize: compact ? 12.5 : 14,
+                  fontWeight: FontWeight.w900,
                   height: 1.2,
                 ),
               ),
@@ -589,13 +522,10 @@ class _HeroStat extends StatelessWidget {
 
               Text(
                 label,
-                style:
-                GoogleFonts.cairo(
-                  color: AppColors
-                      .heroTextSoft,
-                  fontSize: 10,
-                  fontWeight:
-                  FontWeight.w600,
+                style: GoogleFonts.cairo(
+                  color: AppColors.heroTextSoft,
+                  fontSize: compact ? 9 : 10,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -610,40 +540,27 @@ class _HeroStat extends StatelessWidget {
 // COUNTRIES SECTION
 // ==========================================================
 
-class _CountriesSectionHeader
-    extends StatelessWidget {
+class _CountriesSectionHeader extends StatelessWidget {
   const _CountriesSectionHeader();
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding:
-      const EdgeInsets.fromLTRB(
-        24,
-        40,
-        24,
-        24,
-      ),
+      padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
       child: Center(
         child: ConstrainedBox(
-          constraints:
-          const BoxConstraints(
-            maxWidth:
-            AppLayout.maxContentWidth,
+          constraints: const BoxConstraints(
+            maxWidth: AppLayout.maxContentWidth,
           ),
           child: Column(
             children: [
               Text(
                 'السير الذاتية المتاحة',
-                textAlign:
-                TextAlign.center,
-                style:
-                GoogleFonts.cairo(
-                  color: AppColors
-                      .secondaryDark,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.cairo(
+                  color: AppColors.secondaryDark,
                   fontSize: 12,
-                  fontWeight:
-                  FontWeight.w900,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
 
@@ -651,16 +568,12 @@ class _CountriesSectionHeader
 
               Text(
                 'اختر الدولة',
-                textAlign:
-                TextAlign.center,
-                style:
-                GoogleFonts.cairo(
-                  color:
-                  AppColors.primary,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.cairo(
+                  color: AppColors.primary,
                   fontSize: 29,
                   height: 1.35,
-                  fontWeight:
-                  FontWeight.w900,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
 
@@ -668,15 +581,11 @@ class _CountriesSectionHeader
 
               Text(
                 'اختر الدولة لعرض السير الذاتية المتاحة.',
-                textAlign:
-                TextAlign.center,
-                style:
-                GoogleFonts.cairo(
-                  color: AppColors
-                      .textSecondary,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.cairo(
+                  color: AppColors.textSecondary,
                   fontSize: 13,
-                  fontWeight:
-                  FontWeight.w500,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -695,163 +604,88 @@ class _HelpSection extends StatelessWidget {
   const _HelpSection();
 
   Future<void> _callOffice() async {
-    await launchUrl(
-      Uri(
-        scheme: 'tel',
-        path:
-        AppHeader.officePhone,
-      ),
-    );
+    await launchUrl(Uri(scheme: 'tel', path: AppHeader.officePhone));
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding:
-      const EdgeInsets.fromLTRB(
-        24,
-        4,
-        24,
-        42,
-      ),
+      padding: const EdgeInsets.fromLTRB(24, 4, 24, 42),
       child: Center(
         child: ConstrainedBox(
-          constraints:
-          const BoxConstraints(
-            maxWidth:
-            AppLayout.maxContentWidth,
+          constraints: const BoxConstraints(
+            maxWidth: AppLayout.maxContentWidth,
           ),
           child: Container(
-            padding:
-            const EdgeInsets.symmetric(
-              horizontal: 28,
-              vertical: 27,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 27),
             decoration: BoxDecoration(
-              gradient:
-              const LinearGradient(
-                begin:
-                Alignment.centerRight,
-                end:
-                Alignment.centerLeft,
-                colors: [
-                  Color(0xFF102E5E),
-                  Color(0xFF071A36),
-                ],
+              gradient: const LinearGradient(
+                begin: Alignment.centerRight,
+                end: Alignment.centerLeft,
+                colors: [Color(0xFF102E5E), Color(0xFF071A36)],
               ),
-              borderRadius:
-              BorderRadius.circular(
-                AppRadius.xl,
-              ),
-              boxShadow:
-              AppShadows.card,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              boxShadow: AppShadows.card,
               border: Border.all(
-                color: AppColors.secondary
-                    .withValues(
-                  alpha: .12,
-                ),
+                color: AppColors.secondary.withValues(alpha: .12),
               ),
             ),
             child: LayoutBuilder(
-              builder: (
-                  context,
-                  constraints,
-                  ) {
-                final desktop =
-                    constraints.maxWidth >=
-                        720;
+              builder: (context, constraints) {
+                final desktop = constraints.maxWidth >= 720;
 
                 final content = Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'وجدت السيرة المناسبة؟',
-                      style:
-                      GoogleFonts.cairo(
-                        color: AppColors
-                            .textOnPrimary,
-                        fontWeight:
-                        FontWeight.w900,
+                      style: GoogleFonts.cairo(
+                        color: AppColors.textOnPrimary,
+                        fontWeight: FontWeight.w900,
                         fontSize: 21,
                       ),
                     ),
-                    const SizedBox(
-                      height: 4,
-                    ),
+                    const SizedBox(height: 4),
                     Text(
                       'تواصل مباشرة مع فريق بابل الرياض للاستقدام لمساعدتك.',
-                      style:
-                      GoogleFonts.cairo(
-                        color: AppColors
-                            .heroTextSoft,
+                      style: GoogleFonts.cairo(
+                        color: AppColors.heroTextSoft,
                         fontSize: 13,
                         height: 1.7,
-                        fontWeight:
-                        FontWeight.w500,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 );
 
-                final button =
-                FilledButton.icon(
+                final button = FilledButton.icon(
                   onPressed: _callOffice,
-                  style:
-                  FilledButton.styleFrom(
-                    backgroundColor:
-                    AppColors.secondary,
-                    foregroundColor:
-                    AppColors
-                        .textOnSecondary,
-                    padding:
-                    const EdgeInsets
-                        .symmetric(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.secondary,
+                    foregroundColor: AppColors.textOnSecondary,
+                    padding: const EdgeInsets.symmetric(
                       horizontal: 22,
                       vertical: 15,
                     ),
-                    shape:
-                    RoundedRectangleBorder(
-                      borderRadius:
-                      BorderRadius
-                          .circular(
-                        AppRadius.md,
-                      ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     elevation: 0,
                   ),
-                  icon: const Icon(
-                    Icons.call_rounded,
-                    size: 18,
-                  ),
+                  icon: const Icon(Icons.call_rounded, size: 18),
                   label: Row(
-                    mainAxisSize:
-                    MainAxisSize.min,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         'اتصل بنا',
-                        style:
-                        GoogleFonts.cairo(
-                          fontWeight:
-                          FontWeight.w900,
-                        ),
+                        style: GoogleFonts.cairo(fontWeight: FontWeight.w900),
                       ),
-                      const SizedBox(
-                        width: 7,
-                      ),
+                      const SizedBox(width: 7),
                       Directionality(
-                        textDirection:
-                        TextDirection.ltr,
+                        textDirection: TextDirection.ltr,
                         child: Text(
-                          AppHeader
-                              .officePhone,
-                          style:
-                          GoogleFonts.cairo(
-                            fontWeight:
-                            FontWeight
-                                .w900,
-                          ),
+                          AppHeader.officePhone,
+                          style: GoogleFonts.cairo(fontWeight: FontWeight.w900),
                         ),
                       ),
                     ],
@@ -864,63 +698,31 @@ class _HelpSection extends StatelessWidget {
                       Container(
                         width: 50,
                         height: 50,
-                        decoration:
-                        BoxDecoration(
-                          color: AppColors
-                              .secondary
-                              .withValues(
-                            alpha: .13,
-                          ),
-                          borderRadius:
-                          BorderRadius
-                              .circular(
-                            AppRadius.md,
-                          ),
-                          border:
-                          Border.all(
-                            color: AppColors
-                                .secondary
-                                .withValues(
-                              alpha: .14,
-                            ),
+                        decoration: BoxDecoration(
+                          color: AppColors.secondary.withValues(alpha: .13),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                          border: Border.all(
+                            color: AppColors.secondary.withValues(alpha: .14),
                           ),
                         ),
-                        alignment:
-                        Alignment.center,
-                        child:
-                        const Icon(
-                          Icons
-                              .support_agent_rounded,
-                          color: AppColors
-                              .secondary,
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.support_agent_rounded,
+                          color: AppColors.secondary,
                           size: 25,
                         ),
                       ),
-                      const SizedBox(
-                        width: 15,
-                      ),
-                      Expanded(
-                        child: content,
-                      ),
-                      const SizedBox(
-                        width: 24,
-                      ),
+                      const SizedBox(width: 15),
+                      Expanded(child: content),
+                      const SizedBox(width: 24),
                       button,
                     ],
                   );
                 }
 
                 return Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment
-                      .stretch,
-                  children: [
-                    content,
-                    const SizedBox(
-                      height: 18,
-                    ),
-                    button,
-                  ],
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [content, const SizedBox(height: 18), button],
                 );
               },
             ),
@@ -942,45 +744,31 @@ class _TrustStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: AppColors.surface,
-      padding:
-      const EdgeInsets.symmetric(
-        horizontal: 24,
-        vertical: 28,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
       child: Center(
         child: ConstrainedBox(
-          constraints:
-          const BoxConstraints(
-            maxWidth:
-            AppLayout.maxContentWidth,
+          constraints: const BoxConstraints(
+            maxWidth: AppLayout.maxContentWidth,
           ),
           child: const Wrap(
-            alignment:
-            WrapAlignment
-                .spaceBetween,
+            alignment: WrapAlignment.spaceBetween,
             spacing: 30,
             runSpacing: 22,
             children: [
               _TrustItem(
-                icon: Icons
-                    .verified_user_outlined,
+                icon: Icons.verified_user_outlined,
                 title: 'بيانات واضحة',
-                subtitle:
-                'المعلومات الأساسية أمامك',
+                subtitle: 'المعلومات الأساسية أمامك',
               ),
               _TrustItem(
-                icon:
-                Icons.tune_rounded,
+                icon: Icons.tune_rounded,
                 title: 'اختيار أسهل',
-                subtitle:
-                'فلترة حسب احتياجك',
+                subtitle: 'فلترة حسب احتياجك',
               ),
               _TrustItem(
-                icon: Icons
-                    .support_agent_rounded,
+                icon: Icons.support_agent_rounded,
                 title: 'تواصل مباشر',
-                subtitle:
-                'فريقنا جاهز لخدمتك',
+                subtitle: 'فريقنا جاهز لخدمتك',
               ),
             ],
           ),
@@ -1011,45 +799,27 @@ class _TrustItem extends StatelessWidget {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: AppColors
-                  .secondarySoft,
-              borderRadius:
-              BorderRadius.circular(
-                AppRadius.md,
-              ),
+              color: AppColors.secondarySoft,
+              borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(
-                color: AppColors.secondary
-                    .withValues(
-                  alpha: .13,
-                ),
+                color: AppColors.secondary.withValues(alpha: .13),
               ),
             ),
-            alignment:
-            Alignment.center,
-            child: Icon(
-              icon,
-              color:
-              AppColors.secondaryDark,
-              size: 22,
-            ),
+            alignment: Alignment.center,
+            child: Icon(icon, color: AppColors.secondaryDark, size: 22),
           ),
 
           const SizedBox(width: 12),
 
           Expanded(
             child: Column(
-              crossAxisAlignment:
-              CrossAxisAlignment
-                  .start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style:
-                  GoogleFonts.cairo(
-                    color:
-                    AppColors.primary,
-                    fontWeight:
-                    FontWeight.w800,
+                  style: GoogleFonts.cairo(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w800,
                     fontSize: 13.5,
                   ),
                 ),
@@ -1058,13 +828,10 @@ class _TrustItem extends StatelessWidget {
 
                 Text(
                   subtitle,
-                  style:
-                  GoogleFonts.cairo(
-                    color: AppColors
-                        .textSecondary,
+                  style: GoogleFonts.cairo(
+                    color: AppColors.textSecondary,
                     fontSize: 11.5,
-                    fontWeight:
-                    FontWeight.w500,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -1087,75 +854,47 @@ class _Footer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      decoration:
-      const BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin:
-          Alignment.topRight,
-          end:
-          Alignment.bottomLeft,
-          colors: [
-            Color(0xFF102E5E),
-            Color(0xFF071A36),
-          ],
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+          colors: [Color(0xFF102E5E), Color(0xFF071A36)],
         ),
       ),
-      padding:
-      const EdgeInsets.fromLTRB(
-        24,
-        30,
-        24,
-        20,
-      ),
+      padding: const EdgeInsets.fromLTRB(24, 30, 24, 20),
       child: Center(
         child: ConstrainedBox(
-          constraints:
-          const BoxConstraints(
-            maxWidth:
-            AppLayout.maxContentWidth,
+          constraints: const BoxConstraints(
+            maxWidth: AppLayout.maxContentWidth,
           ),
           child: Column(
             children: [
               Wrap(
-                alignment:
-                WrapAlignment
-                    .spaceBetween,
+                alignment: WrapAlignment.spaceBetween,
                 spacing: 40,
                 runSpacing: 22,
                 children: [
                   SizedBox(
                     width: 420,
                     child: Column(
-                      crossAxisAlignment:
-                      CrossAxisAlignment
-                          .start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'بابل الرياض للاستقدام',
-                          style:
-                          GoogleFonts.cairo(
-                            color: AppColors
-                                .textOnPrimary,
+                          style: GoogleFonts.cairo(
+                            color: AppColors.textOnPrimary,
                             fontSize: 18,
-                            fontWeight:
-                            FontWeight
-                                .w900,
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
-                        const SizedBox(
-                          height: 6,
-                        ),
+                        const SizedBox(height: 6),
                         Text(
                           'نسهّل عليك استعراض السير الذاتية واختيار المناسب لك.',
-                          style:
-                          GoogleFonts.cairo(
-                            color: AppColors
-                                .heroTextSoft,
+                          style: GoogleFonts.cairo(
+                            color: AppColors.heroTextSoft,
                             fontSize: 12.5,
                             height: 1.7,
-                            fontWeight:
-                            FontWeight
-                                .w500,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
@@ -1165,40 +904,28 @@ class _Footer extends StatelessWidget {
                   SizedBox(
                     width: 270,
                     child: Column(
-                      crossAxisAlignment:
-                      CrossAxisAlignment
-                          .start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'تواصل معنا',
-                          style:
-                          GoogleFonts.cairo(
-                            color: AppColors
-                                .textOnPrimary,
+                          style: GoogleFonts.cairo(
+                            color: AppColors.textOnPrimary,
                             fontSize: 14,
-                            fontWeight:
-                            FontWeight
-                                .w800,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
 
-                        const SizedBox(
-                          height: 10,
-                        ),
+                        const SizedBox(height: 10),
 
                         const _FooterContact(
-                          icon:
-                          Icons.call_rounded,
-                          text:
-                          '920005077',
+                          icon: Icons.call_rounded,
+                          text: '920005077',
                           ltr: true,
                         ),
 
                         const _FooterContact(
-                          icon: Icons
-                              .location_on_outlined,
-                          text:
-                          'الرياض - المملكة العربية السعودية',
+                          icon: Icons.location_on_outlined,
+                          text: 'الرياض - المملكة العربية السعودية',
                         ),
                       ],
                     ),
@@ -1206,32 +933,19 @@ class _Footer extends StatelessWidget {
                 ],
               ),
 
-              const SizedBox(
-                height: 24,
-              ),
+              const SizedBox(height: 24),
 
-              Divider(
-                color: AppColors.surface
-                    .withValues(
-                  alpha: .12,
-                ),
-              ),
+              Divider(color: AppColors.surface.withValues(alpha: .12)),
 
-              const SizedBox(
-                height: 15,
-              ),
+              const SizedBox(height: 15),
 
               Text(
                 '© بابل الرياض للاستقدام - جميع الحقوق محفوظة',
-                textAlign:
-                TextAlign.center,
-                style:
-                GoogleFonts.cairo(
-                  color: AppColors
-                      .heroTextSoft,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.cairo(
+                  color: AppColors.heroTextSoft,
                   fontSize: 11,
-                  fontWeight:
-                  FontWeight.w500,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -1246,8 +960,7 @@ class _Footer extends StatelessWidget {
 // FOOTER CONTACT
 // ==========================================================
 
-class _FooterContact
-    extends StatelessWidget {
+class _FooterContact extends StatelessWidget {
   final IconData icon;
   final String text;
   final bool ltr;
@@ -1261,37 +974,22 @@ class _FooterContact
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding:
-      const EdgeInsets.only(
-        bottom: 8,
-      ),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color:
-            AppColors.secondary,
-            size: 16,
-          ),
+          Icon(icon, color: AppColors.secondary, size: 16),
 
           const SizedBox(width: 8),
 
           Expanded(
             child: Text(
               text,
-              textDirection: ltr
-                  ? TextDirection.ltr
-                  : TextDirection.rtl,
-              textAlign: ltr
-                  ? TextAlign.right
-                  : TextAlign.start,
-              style:
-              GoogleFonts.cairo(
-                color: AppColors
-                    .heroTextSoft,
+              textDirection: ltr ? TextDirection.ltr : TextDirection.rtl,
+              textAlign: ltr ? TextAlign.right : TextAlign.start,
+              style: GoogleFonts.cairo(
+                color: AppColors.heroTextSoft,
                 fontSize: 12,
-                fontWeight:
-                FontWeight.w500,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -1307,66 +1005,43 @@ class _FooterContact
 
 class _ErrorState extends StatelessWidget {
   final String message;
-  final Future<void> Function()
-  onRetry;
+  final Future<void> Function() onRetry;
 
-  const _ErrorState({
-    required this.message,
-    required this.onRetry,
-  });
+  const _ErrorState({required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding:
-        const EdgeInsets.all(
-          AppSpacing.lg,
-        ),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
-          mainAxisSize:
-          MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
               Icons.cloud_off_rounded,
               size: 58,
-              color:
-              AppColors.textMuted,
+              color: AppColors.textMuted,
             ),
 
-            const SizedBox(
-              height: 14,
-            ),
+            const SizedBox(height: 14),
 
             Text(
               message,
-              textAlign:
-              TextAlign.center,
-              style:
-              GoogleFonts.cairo(
-                color: AppColors
-                    .textPrimary,
-                fontWeight:
-                FontWeight.w700,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.cairo(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w700,
               ),
             ),
 
-            const SizedBox(
-              height: 14,
-            ),
+            const SizedBox(height: 14),
 
             FilledButton.icon(
               onPressed: onRetry,
-              icon: const Icon(
-                Icons.refresh_rounded,
-              ),
+              icon: const Icon(Icons.refresh_rounded),
               label: Text(
                 'إعادة المحاولة',
-                style:
-                GoogleFonts.cairo(
-                  fontWeight:
-                  FontWeight.w700,
-                ),
+                style: GoogleFonts.cairo(fontWeight: FontWeight.w700),
               ),
             ),
           ],

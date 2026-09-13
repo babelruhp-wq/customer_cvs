@@ -16,7 +16,8 @@ class CountryCard extends StatefulWidget {
   });
 
   @override
-  State<CountryCard> createState() => _CountryCardState();
+  State<CountryCard> createState() =>
+      _CountryCardState();
 }
 
 class _CountryCardState extends State<CountryCard> {
@@ -25,7 +26,8 @@ class _CountryCardState extends State<CountryCard> {
   String _formatPrice(num value) {
     final number = value.toDouble();
 
-    final text = number == number.roundToDouble()
+    final text =
+    number == number.roundToDouble()
         ? number.toInt().toString()
         : number.toStringAsFixed(2);
 
@@ -35,172 +37,277 @@ class _CountryCardState extends State<CountryCard> {
   @override
   Widget build(BuildContext context) {
     final country = widget.country;
-    final hasCvs = country.cVsCount > 0;
+
+    final hasCvs =
+        country.cVsCount > 0;
 
     return MouseRegion(
       cursor: hasCvs
           ? SystemMouseCursors.click
           : SystemMouseCursors.basic,
       onEnter: (_) {
-        if (!hasCvs) return;
+        if (!hasCvs) {
+          return;
+        }
 
         setState(() {
           _hovered = true;
         });
       },
       onExit: (_) {
-        if (!_hovered) return;
+        if (!_hovered) {
+          return;
+        }
 
         setState(() {
           _hovered = false;
         });
       },
       child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: hasCvs ? widget.onTap : null,
+        onTap:
+        hasCvs ? widget.onTap : null,
         child: AnimatedContainer(
           duration: const Duration(
             milliseconds: 180,
           ),
           curve: Curves.easeOut,
-          transform: Matrix4.translationValues(
+          transform:
+          Matrix4.translationValues(
             0,
-            hasCvs && _hovered ? -4 : 0,
+            hasCvs && _hovered
+                ? -6
+                : 0,
             0,
           ),
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(
-              AppRadius.xl,
+            borderRadius:
+            BorderRadius.circular(
+              24,
             ),
             border: Border.all(
-              color: hasCvs && _hovered
-                  ? AppColors.primary.withValues(
-                alpha: .28,
+              width:
+              _hovered && hasCvs
+                  ? 1.6
+                  : 1,
+              color:
+              _hovered && hasCvs
+                  ? AppColors.primary
+                  .withValues(
+                alpha: .40,
               )
                   : AppColors.border,
             ),
-            boxShadow: hasCvs && _hovered
-                ? AppShadows.floating
-                : AppShadows.card,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary
+                    .withValues(
+                  alpha: _hovered
+                      ? .13
+                      : .075,
+                ),
+                blurRadius:
+                _hovered ? 28 : 20,
+                offset: Offset(
+                  0,
+                  _hovered ? 12 : 8,
+                ),
+              ),
+            ],
           ),
-          clipBehavior: Clip.antiAlias,
+          clipBehavior:
+          Clip.antiAlias,
           child: Stack(
             children: [
+              // ============================================
+              // MAIN CONTENT
+              // ============================================
+
               Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  18,
-                  24,
-                  18,
-                  18,
+                padding:
+                const EdgeInsets.fromLTRB(
+                  22,
+                  27,
+                  22,
+                  20,
                 ),
                 child: Column(
                   crossAxisAlignment:
-                  CrossAxisAlignment.stretch,
+                  CrossAxisAlignment
+                      .stretch,
                   children: [
-                    // =====================================
+                    // ======================================
                     // FLAG
-                    // =====================================
+                    // ======================================
 
                     Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        width: 92,
-                        height: 68,
-                        padding: const EdgeInsets.all(7),
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceMuted,
+                      alignment:
+                      Alignment.center,
+                      child: AnimatedContainer(
+                        duration:
+                        const Duration(
+                          milliseconds: 180,
+                        ),
+                        width:
+                        _hovered && hasCvs
+                            ? 112
+                            : 108,
+                        height:
+                        _hovered && hasCvs
+                            ? 82
+                            : 78,
+                        padding:
+                        const EdgeInsets.all(
+                          7,
+                        ),
+                        decoration:
+                        BoxDecoration(
+                          color: AppColors
+                              .surfaceMuted,
                           borderRadius:
-                          BorderRadius.circular(
-                            AppRadius.lg,
+                          BorderRadius
+                              .circular(
+                            18,
                           ),
-                          border: Border.all(
-                            color: AppColors.border,
+                          border:
+                          Border.all(
+                            color: AppColors
+                                .border,
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors
+                                  .black
+                                  .withValues(
+                                alpha: .045,
+                              ),
+                              blurRadius: 12,
+                              offset:
+                              const Offset(
+                                0,
+                                5,
+                              ),
+                            ),
+                          ],
                         ),
                         child: ClipRRect(
                           borderRadius:
-                          BorderRadius.circular(
-                            AppRadius.sm,
+                          BorderRadius
+                              .circular(
+                            11,
                           ),
-                          child:
-                          CountryFlag.fromCountryCode(
+                          child: CountryFlag
+                              .fromCountryCode(
                             country.flagCode,
                           ),
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 14),
+                    const SizedBox(
+                      height: 16,
+                    ),
 
-                    // =====================================
+                    // ======================================
                     // COUNTRY NAME
-                    // =====================================
+                    // ======================================
 
                     Text(
                       country.countryName,
-                      textAlign: TextAlign.center,
+                      textAlign:
+                      TextAlign.center,
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.cairo(
-                        color: AppColors.textPrimary,
-                        fontSize: 21,
-                        fontWeight: FontWeight.w900,
+                      overflow:
+                      TextOverflow
+                          .ellipsis,
+                      style:
+                      GoogleFonts.cairo(
+                        color: AppColors
+                            .textPrimary,
+                        fontSize: 24,
+                        height: 1.35,
+                        fontWeight:
+                        FontWeight.w900,
                       ),
                     ),
 
-                    const SizedBox(height: 9),
+                    const SizedBox(
+                      height: 11,
+                    ),
 
-                    // =====================================
+                    // ======================================
                     // CVS COUNT
-                    // =====================================
+                    // ======================================
 
                     Center(
                       child: Container(
                         padding:
-                        const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
+                        const EdgeInsets
+                            .symmetric(
+                          horizontal: 14,
+                          vertical: 7,
                         ),
-                        decoration: BoxDecoration(
+                        decoration:
+                        BoxDecoration(
                           color: hasCvs
-                              ? AppColors.primary.withValues(
-                            alpha: .07,
+                              ? AppColors
+                              .primary
+                              .withValues(
+                            alpha: .075,
                           )
-                              : AppColors.surfaceMuted,
+                              : AppColors
+                              .surfaceMuted,
                           borderRadius:
-                          BorderRadius.circular(30),
-                          border: Border.all(
+                          BorderRadius
+                              .circular(
+                            30,
+                          ),
+                          border:
+                          Border.all(
                             color: hasCvs
-                                ? AppColors.primary.withValues(
-                              alpha: .12,
+                                ? AppColors
+                                .primary
+                                .withValues(
+                              alpha: .15,
                             )
-                                : AppColors.border,
+                                : AppColors
+                                .border,
                           ),
                         ),
                         child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                          mainAxisSize:
+                          MainAxisSize
+                              .min,
                           children: [
                             Icon(
-                              Icons.description_outlined,
-                              size: 15,
+                              Icons
+                                  .description_outlined,
+                              size: 17,
                               color: hasCvs
-                                  ? AppColors.primary
-                                  : AppColors.textSecondary,
+                                  ? AppColors
+                                  .primary
+                                  : AppColors
+                                  .textSecondary,
                             ),
 
-                            const SizedBox(width: 6),
+                            const SizedBox(
+                              width: 7,
+                            ),
 
                             Text(
                               '${country.cVsCount} سيرة متوفرة',
-                              style: GoogleFonts.cairo(
+                              style:
+                              GoogleFonts
+                                  .cairo(
                                 color: hasCvs
-                                    ? AppColors.primary
+                                    ? AppColors
+                                    .primary
                                     : AppColors
                                     .textSecondary,
-                                fontSize: 11,
+                                fontSize: 12.5,
                                 fontWeight:
-                                FontWeight.w800,
+                                FontWeight
+                                    .w900,
                               ),
                             ),
                           ],
@@ -208,85 +315,108 @@ class _CountryCardState extends State<CountryCard> {
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                    SizedBox(
+                      height:
+                      hasCvs ? 12 : 7,
+                    ),
 
-                    // =====================================
-                    // AVAILABILITY STATUS
-                    // مساحة ثابتة حتى تظل كل الكروت متساوية
-                    // =====================================
+                    // ======================================
+                    // EMPTY TEXT
+                    // ======================================
 
                     SizedBox(
-                      height: 18,
-                      child: Center(
-                        child: hasCvs
-                            ? const SizedBox.shrink()
-                            : Text(
-                          'في انتظار إضافة سير ذاتية',
+                      height: 19,
+                      child: hasCvs
+                          ? const SizedBox
+                          .shrink()
+                          : Center(
+                        child: Text(
+                          'في انتظار توفر سير ذاتية',
                           textAlign:
-                          TextAlign.center,
-                          maxLines: 1,
-                          overflow:
-                          TextOverflow.ellipsis,
-                          style: GoogleFonts.cairo(
+                          TextAlign
+                              .center,
+                          style:
+                          GoogleFonts
+                              .cairo(
                             color: AppColors
                                 .textSecondary,
-                            fontSize: 10.5,
+                            fontSize:
+                            11.5,
                             fontWeight:
-                            FontWeight.w600,
+                            FontWeight
+                                .w700,
                           ),
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(
+                      height: 10,
+                    ),
 
-                    // =====================================
+                    // ======================================
                     // PRICE
-                    // =====================================
+                    // ======================================
 
                     Container(
                       padding:
-                      const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
+                      const EdgeInsets
+                          .fromLTRB(
+                        14,
+                        12,
+                        14,
+                        12,
                       ),
-                      decoration: BoxDecoration(
-                        color:
-                        AppColors.secondaryFaint,
+                      decoration:
+                      BoxDecoration(
+                        color: AppColors
+                            .secondaryFaint,
                         borderRadius:
-                        BorderRadius.circular(
-                          AppRadius.md,
+                        BorderRadius
+                            .circular(
+                          15,
                         ),
-                        border: Border.all(
-                          color: AppColors.secondary
+                        border:
+                        Border.all(
+                          color: AppColors
+                              .secondary
                               .withValues(
-                            alpha: .16,
+                            alpha: .25,
                           ),
+                          width: 1.2,
                         ),
                       ),
                       child: Row(
                         children: [
                           Container(
-                            width: 34,
-                            height: 34,
-                            decoration: BoxDecoration(
+                            width: 43,
+                            height: 43,
+                            decoration:
+                            BoxDecoration(
                               color: AppColors
                                   .secondarySoft,
                               borderRadius:
-                              BorderRadius.circular(
-                                AppRadius.sm,
+                              BorderRadius
+                                  .circular(
+                                12,
                               ),
                             ),
-                            alignment: Alignment.center,
-                            child: const Icon(
-                              Icons.payments_outlined,
-                              color:
-                              AppColors.secondaryDark,
-                              size: 18,
+                            alignment:
+                            Alignment
+                                .center,
+                            child:
+                            const Icon(
+                              Icons
+                                  .payments_outlined,
+                              color: AppColors
+                                  .secondaryDark,
+                              size: 21,
                             ),
                           ),
 
-                          const SizedBox(width: 10),
+                          const SizedBox(
+                            width: 11,
+                          ),
 
                           Expanded(
                             child: Column(
@@ -296,25 +426,85 @@ class _CountryCardState extends State<CountryCard> {
                               children: [
                                 Text(
                                   'سعر الاستقدام',
-                                  style: GoogleFonts.cairo(
+                                  style:
+                                  GoogleFonts
+                                      .cairo(
                                     color: AppColors
                                         .textSecondary,
-                                    fontSize: 10,
+                                    fontSize:
+                                    11,
                                     fontWeight:
-                                    FontWeight.w600,
+                                    FontWeight
+                                        .w700,
                                   ),
                                 ),
+
+                                const SizedBox(
+                                  height: 1,
+                                ),
+
                                 Text(
                                   _formatPrice(
                                     country.price,
                                   ),
-                                  style: GoogleFonts.cairo(
+                                  textDirection:
+                                  TextDirection
+                                      .rtl,
+                                  style:
+                                  GoogleFonts
+                                      .cairo(
                                     color: AppColors
-                                        .textPrimary,
-                                    fontSize: 14,
+                                        .primary,
+                                    fontSize:
+                                    19,
+                                    height: 1.35,
                                     fontWeight:
-                                    FontWeight.w900,
+                                    FontWeight
+                                        .w900,
                                   ),
+                                ),
+
+                                const SizedBox(
+                                  height: 3,
+                                ),
+
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons
+                                          .verified_outlined,
+                                      size: 13,
+                                      color: AppColors
+                                          .secondaryDark,
+                                    ),
+
+                                    const SizedBox(
+                                      width: 4,
+                                    ),
+
+                                    Expanded(
+                                      child:
+                                      Text(
+                                        'شامل ضريبة القيمة المضافة',
+                                        maxLines:
+                                        1,
+                                        overflow:
+                                        TextOverflow
+                                            .ellipsis,
+                                        style:
+                                        GoogleFonts
+                                            .cairo(
+                                          color: AppColors
+                                              .secondaryDark,
+                                          fontSize:
+                                          10.5,
+                                          fontWeight:
+                                          FontWeight
+                                              .w800,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -325,34 +515,36 @@ class _CountryCardState extends State<CountryCard> {
 
                     const Spacer(),
 
-                    // =====================================
+                    // ======================================
                     // ACTION
-                    // =====================================
+                    // ======================================
 
                     SizedBox(
-                      height: 44,
-                      child: FilledButton.icon(
-                        onPressed:
-                        hasCvs ? widget.onTap : null,
+                      height: 50,
+                      child:
+                      FilledButton.icon(
+                        onPressed: hasCvs
+                            ? widget.onTap
+                            : null,
                         icon: Icon(
                           hasCvs
                               ? Icons
                               .description_outlined
                               : Icons
                               .hourglass_empty_rounded,
-                          size: 18,
+                          size: 20,
                         ),
                         label: Text(
                           hasCvs
                               ? 'عرض السير الذاتية'
-                              : 'في انتظار إضافة سير',
-                          maxLines: 1,
-                          overflow:
-                          TextOverflow.ellipsis,
-                          style: GoogleFonts.cairo(
-                            fontSize: 12,
+                              : 'في انتظار توفر سير',
+                          style:
+                          GoogleFonts
+                              .cairo(
+                            fontSize: 13.5,
                             fontWeight:
-                            FontWeight.w900,
+                            FontWeight
+                                .w900,
                           ),
                         ),
                       ),
@@ -361,39 +553,48 @@ class _CountryCardState extends State<CountryCard> {
                 ),
               ),
 
-              // =====================================
+              // ============================================
               // RIBBON
-              // =====================================
+              // ============================================
 
               if (country.showRibbon)
                 Positioned(
-                  top: 21,
-                  left: -38,
+                  top: 23,
+                  left: -39,
                   child: Transform.rotate(
                     angle: -0.785398,
                     child: Container(
-                      width: 150,
-                      height: 31,
-                      alignment: Alignment.center,
+                      width: 160,
+                      height: 34,
+                      alignment:
+                      Alignment.center,
                       color: const Color(
                         0xFF16A34A,
                       ),
                       child: Padding(
                         padding:
-                        const EdgeInsets.symmetric(
+                        const EdgeInsets
+                            .symmetric(
                           horizontal: 8,
                         ),
                         child: Text(
                           country.ribbon,
                           maxLines: 1,
                           overflow:
-                          TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.cairo(
-                            color: Colors.white,
-                            fontSize: 10,
+                          TextOverflow
+                              .ellipsis,
+                          textAlign:
+                          TextAlign
+                              .center,
+                          style:
+                          GoogleFonts
+                              .cairo(
+                            color:
+                            Colors.white,
+                            fontSize: 11,
                             fontWeight:
-                            FontWeight.w900,
+                            FontWeight
+                                .w900,
                           ),
                         ),
                       ),

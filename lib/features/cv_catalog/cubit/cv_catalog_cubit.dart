@@ -11,7 +11,15 @@ class CvCatalogCubit extends Cubit<CvCatalogState> {
   /// Prevents an older request from replacing a newer result.
   int _requestToken = 0;
 
-  CvCatalogCubit(this.repository) : super(const CvCatalogState());
+  CvCatalogCubit(
+      this.repository,
+      ) : super(
+    const CvCatalogState(),
+  );
+
+  // =========================================================
+  // COUNTRIES
+  // =========================================================
 
   Future<void> loadCountries() async {
     emit(
@@ -22,7 +30,9 @@ class CvCatalogCubit extends Cubit<CvCatalogState> {
     );
 
     try {
-      final countries = await repository.getCountries();
+      final countries =
+      await repository.getCountries();
+
       if (isClosed) return;
 
       emit(
@@ -38,13 +48,20 @@ class CvCatalogCubit extends Cubit<CvCatalogState> {
       emit(
         state.copyWith(
           countriesStatus: LoadStatus.failure,
-          error: 'تعذر تحميل الدول حاليًا. حاول مرة أخرى.',
+          error:
+          'تعذر تحميل الدول حاليًا. حاول مرة أخرى.',
         ),
       );
     }
   }
 
-  void selectCountry(CountryModel country) {
+  // =========================================================
+  // SELECT COUNTRY
+  // =========================================================
+
+  void selectCountry(
+      CountryModel country,
+      ) {
     emit(
       state.copyWith(
         selectedCountry: country,
@@ -60,108 +77,240 @@ class CvCatalogCubit extends Cubit<CvCatalogState> {
     loadCvs();
   }
 
+  // =========================================================
+  // LOAD CVS
+  // =========================================================
+
   Future<void> loadCvs({
     bool showLoader = true,
     bool refresh = false,
   }) async {
-    final country = state.selectedCountry;
-    if (country == null) return;
+    final country =
+        state.selectedCountry;
 
-    final token = ++_requestToken;
+    if (country == null) {
+      return;
+    }
+
+    final token =
+    ++_requestToken;
 
     if (refresh) {
-      repository.clearCountryCache(country.id);
+      repository.clearCountryCache(
+        country.id,
+      );
     }
 
     emit(
       state.copyWith(
-        cvsStatus: showLoader ? LoadStatus.loading : state.cvsStatus,
+        cvsStatus: showLoader
+            ? LoadStatus.loading
+            : state.cvsStatus,
         clearError: true,
       ),
     );
 
     try {
-      final result = await repository.getCvs(
+      final result =
+      await repository.getCvs(
         countryId: country.id,
         filters: state.filters,
         page: state.page,
         pageSize: state.pageSize,
       );
 
-      if (token != _requestToken || isClosed) return;
+      if (token != _requestToken ||
+          isClosed) {
+        return;
+      }
 
       emit(
         state.copyWith(
           cvsStatus: LoadStatus.success,
           cvs: result.items,
           page: result.page,
-          totalCount: result.totalCount,
-          totalPages: result.totalPages < 1 ? 1 : result.totalPages,
+          totalCount:
+          result.totalCount,
+          totalPages:
+          result.totalPages < 1
+              ? 1
+              : result.totalPages,
           clearError: true,
         ),
       );
     } catch (_) {
-      if (token != _requestToken || isClosed) return;
+      if (token != _requestToken ||
+          isClosed) {
+        return;
+      }
 
       emit(
         state.copyWith(
           cvsStatus: LoadStatus.failure,
-          error: 'تعذر تحميل السير الذاتية حاليًا. حاول مرة أخرى.',
+          error:
+          'تعذر تحميل السير الذاتية حاليًا. حاول مرة أخرى.',
         ),
       );
     }
   }
 
-  Future<List<int>> getCvPdf(String cvId) {
-    return repository.getCvPdf(cvId);
+  // =========================================================
+  // PDF
+  // =========================================================
+
+  Future<List<int>> getCvPdf(
+      String cvId,
+      ) {
+    return repository.getCvPdf(
+      cvId,
+    );
   }
 
-  Future<void> setReligion(ReligionFilter value) async {
+  // =========================================================
+  // SEARCH BY PASSPORT NUMBER
+  // =========================================================
+
+  Future<void> setPassportSearch(
+      String value,
+      ) async {
+    final passportNumber =
+    value
+        .trim()
+        .toUpperCase();
+
+    if (passportNumber ==
+        state.filters.passportNumber) {
+      return;
+    }
+
     emit(
       state.copyWith(
-        filters: state.filters.copyWith(religion: value),
+        filters:
+        state.filters.copyWith(
+          passportNumber:
+          passportNumber,
+        ),
         page: 1,
       ),
     );
 
-    await loadCvs(showLoader: false);
+    await loadCvs(
+      showLoader: false,
+    );
   }
 
-  Future<void> setExperience(ExperienceFilter value) async {
+  // =========================================================
+  // RELIGION
+  // =========================================================
+
+  Future<void> setReligion(
+      ReligionFilter value,
+      ) async {
+    if (value ==
+        state.filters.religion) {
+      return;
+    }
+
     emit(
       state.copyWith(
-        filters: state.filters.copyWith(experience: value),
+        filters:
+        state.filters.copyWith(
+          religion: value,
+        ),
         page: 1,
       ),
     );
 
-    await loadCvs(showLoader: false);
+    await loadCvs(
+      showLoader: false,
+    );
   }
+
+  // =========================================================
+  // EXPERIENCE
+  // =========================================================
+
+  Future<void> setExperience(
+      ExperienceFilter value,
+      ) async {
+    if (value ==
+        state.filters.experience) {
+      return;
+    }
+
+    emit(
+      state.copyWith(
+        filters:
+        state.filters.copyWith(
+          experience: value,
+        ),
+        page: 1,
+      ),
+    );
+
+    await loadCvs(
+      showLoader: false,
+    );
+  }
+
+  // =========================================================
+  // RESET
+  // =========================================================
 
   Future<void> resetFilters() async {
     emit(
       state.copyWith(
-        filters: const CvFilters(),
+        filters:
+        const CvFilters(),
         page: 1,
       ),
     );
 
-    await loadCvs(showLoader: false);
+    await loadCvs(
+      showLoader: false,
+    );
   }
 
-  Future<void> setPage(int page) async {
-    final maxPage = state.totalPages < 1 ? 1 : state.totalPages;
-    final safePage = page.clamp(1, maxPage).toInt();
+  // =========================================================
+  // PAGINATION
+  // =========================================================
 
-    if (safePage == state.page) return;
+  Future<void> setPage(
+      int page,
+      ) async {
+    final maxPage =
+    state.totalPages < 1
+        ? 1
+        : state.totalPages;
 
-    emit(state.copyWith(page: safePage));
-    await loadCvs(showLoader: false);
+    final safePage =
+    page
+        .clamp(
+      1,
+      maxPage,
+    )
+        .toInt();
+
+    if (safePage ==
+        state.page) {
+      return;
+    }
+
+    emit(
+      state.copyWith(
+        page: safePage,
+      ),
+    );
+
+    await loadCvs(
+      showLoader: false,
+    );
   }
 
   @override
   Future<void> close() {
     _requestToken++;
+
     return super.close();
   }
 }
