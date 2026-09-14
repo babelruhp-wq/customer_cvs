@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../core/theme/app_theme.dart';
-import '../models/candidate_cv_model.dart';
-import 'app_header.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../models/candidate_cv_model.dart';
+import '../shared/app_header.dart';
 import 'inline_pdf_preview.dart';
 
 Future<void> showCvDetailsDialog(
@@ -44,9 +44,6 @@ class _CvDetailsDialog extends StatelessWidget {
       return;
     }
 
-    // مهم:
-    // نحول List<int> إلى Uint8List قبل إنشاء الـ Blob
-    // حتى يتعامل المتصفح معه كـ binary PDF حقيقي.
     final bytes = Uint8List.fromList(
       pdfBytes,
     );
@@ -63,27 +60,24 @@ class _CvDetailsDialog extends StatelessWidget {
       blob,
     );
 
-    // نفتح الـ PDF مباشرة بدل فتح about:blank
-    // ثم تغيير location.
     html.window.open(
       objectUrl,
       '_blank',
     );
-
-    // لا نعمل revoke مباشرة أو بعد مدة قصيرة.
-    // المتصفح سينظف الـ Object URL عند انتهاء الصفحة.
   }
 
   // =========================================================
-  // CALL OFFICE
+  // WHATSAPP
   // =========================================================
 
-  Future<void> _callOffice() async {
+  Future<void> _openWhatsApp() async {
+    final uri = Uri.parse(
+      'https://wa.me/${AppHeader.whatsappNumber}',
+    );
+
     await launchUrl(
-      Uri(
-        scheme: 'tel',
-        path: AppHeader.officePhone,
-      ),
+      uri,
+      mode: LaunchMode.externalApplication,
     );
   }
 
@@ -94,8 +88,7 @@ class _CvDetailsDialog extends StatelessWidget {
   String _salaryText(
       num salary,
       ) {
-    final value =
-    salary.toDouble();
+    final value = salary.toDouble();
 
     if (value ==
         value.roundToDouble()) {
@@ -170,8 +163,8 @@ class _CvDetailsDialog extends StatelessWidget {
                         candidate
                             .salary,
                       ),
-                      onCallOffice:
-                      _callOffice,
+                      onWhatsApp:
+                      _openWhatsApp,
                       onOpenExternal:
                       _openCvExternal,
                     ),
@@ -366,14 +359,13 @@ class _DetailsPanel
     extends StatelessWidget {
   final CandidateCvModel candidate;
   final String salaryText;
-  final VoidCallback onCallOffice;
-  final VoidCallback
-  onOpenExternal;
+  final VoidCallback onWhatsApp;
+  final VoidCallback onOpenExternal;
 
   const _DetailsPanel({
     required this.candidate,
     required this.salaryText,
-    required this.onCallOffice,
+    required this.onWhatsApp,
     required this.onOpenExternal,
   });
 
@@ -406,10 +398,6 @@ class _DetailsPanel
           const SizedBox(
             height: 14,
           ),
-
-          // ================================================
-          // PASSPORT NUMBER
-          // ================================================
 
           _DetailItem(
             icon:
@@ -497,27 +485,62 @@ class _DetailsPanel
           ),
 
           SizedBox(
-            height: 46,
+            height: 48,
             child:
             FilledButton.icon(
               style:
-              AppButtonStyles
-                  .success,
+              FilledButton.styleFrom(
+                backgroundColor:
+                const Color(
+                  0xFF25D366,
+                ),
+                foregroundColor:
+                Colors.white,
+                elevation: 0,
+                shape:
+                RoundedRectangleBorder(
+                  borderRadius:
+                  BorderRadius.circular(
+                    AppRadius.md,
+                  ),
+                ),
+              ),
               onPressed:
-              onCallOffice,
+              onWhatsApp,
               icon: const Icon(
-                Icons.call_rounded,
-                size: 18,
+                Icons.chat_rounded,
+                size: 19,
               ),
               label: Text(
-                'تواصل مع المكتب',
+                'تواصل عبر واتساب',
                 style:
-                GoogleFonts
-                    .cairo(
+                GoogleFonts.cairo(
                   fontWeight:
-                  FontWeight
-                      .w900,
+                  FontWeight.w900,
                 ),
+              ),
+            ),
+          ),
+
+          const SizedBox(
+            height: 5,
+          ),
+
+          Directionality(
+            textDirection:
+            TextDirection.ltr,
+            child: Text(
+              AppHeader
+                  .whatsappDisplayNumber,
+              textAlign:
+              TextAlign.center,
+              style:
+              GoogleFonts.cairo(
+                color: AppColors
+                    .textSecondary,
+                fontSize: 10.5,
+                fontWeight:
+                FontWeight.w700,
               ),
             ),
           ),
@@ -959,11 +982,9 @@ class _FullPdfError
               label: Text(
                 'فتح في المتصفح',
                 style:
-                GoogleFonts
-                    .cairo(
+                GoogleFonts.cairo(
                   fontWeight:
-                  FontWeight
-                      .w800,
+                  FontWeight.w800,
                 ),
               ),
             ),
