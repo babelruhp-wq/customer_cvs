@@ -176,7 +176,7 @@ class _HeroWatermarkLogo extends StatelessWidget {
               width: logoWidth,
               height: height * .90,
               child: Image.asset(
-                'assets/images/og-preview.png',
+                'assets/images/logo.png',
                 fit: BoxFit.contain,
                 filterQuality: FilterQuality.high,
               ),
