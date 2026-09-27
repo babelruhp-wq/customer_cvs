@@ -49671,7 +49671,7 @@ return new A.c1(B.Lr,A.ld(A.cZ(A.b([B.LA,B.XN,A.dL(A.ld(new A.zu(this.a.c,!1,!1,
 $S:365}
 A.zx.prototype={
 K(a){var s=null,r=this.c,q=this.d,p=A.bZ(s,s,B.n,s,s,new A.bG(s,s,s,A.bt(r/2),s,new A.tY(B.Dm,0.82,B.bJ,s,0,A.b([B.h.d5(0.3),B.h.d5(0.19),B.bK.d5(0.045),B.h.d5(0.035),B.G],t.t_),B.OP,s),B.E),s,q,s,s,s,s,r)
-return A.lp(A.d5(A.nL(B.Q,A.b([p,A.d5(new A.rJ(A.b1f(s,s,new A.B4("assets/images/logo.png",s,s)),B.e9,B.ol,s),q*0.9,this.e)],t.p),B.a4,B.cC,s),q,r),!0,s)}}
+return A.lp(A.d5(A.nL(B.Q,A.b([p,A.d5(new A.rJ(A.b1f(s,s,new A.B4("assets/images/og-preview.png",s,s)),B.e9,B.ol,s),q*0.9,this.e)],t.p),B.a4,B.cC,s),q,r),!0,s)}}
 A.zu.prototype={
 K(a){var s,r,q,p,o,n,m,l,k=this,j=null,i=k.d,h=i||k.e
 if(i)s=28
