@@ -1,3 +1,6 @@
+import 'dart:html' as html;
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -5,7 +8,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../cubit/cv_catalog_cubit.dart';
 import '../../models/candidate_cv_model.dart';
-import 'cv_details_dialog.dart';
 import 'inline_pdf_preview.dart';
 
 class CandidateCard extends StatefulWidget {
@@ -58,34 +60,75 @@ class _CandidateCardState
     });
   }
 
-  Future<void> _openDetails() async {
+  Future<void> _openPdfInBrowser() async {
+    html.WindowBase? pdfWindow;
+
     try {
-      final bytes = await _pdfFuture;
-
-      if (!mounted) return;
-
-      await showCvDetailsDialog(
-        context,
-        widget.candidate,
-        pdfBytes: bytes,
+      // افتح التبويب فور ضغط المستخدم حتى لا يمنعه Popup Blocker.
+      pdfWindow = html.window.open(
+        'about:blank',
+        '_blank',
       );
+
+      final pdfBytes = await _pdfFuture;
+
+      if (pdfBytes.isEmpty) {
+        pdfWindow.close();
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: AppColors.error,
+              content: Text(
+                'تعذر تحميل ملف السيرة الذاتية.',
+                style: GoogleFonts.cairo(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          );
+
+        return;
+      }
+
+      final bytes = Uint8List.fromList(
+        pdfBytes,
+      );
+
+      final blob = html.Blob(
+        <dynamic>[bytes],
+        'application/pdf',
+      );
+
+      final objectUrl =
+      html.Url.createObjectUrlFromBlob(
+        blob,
+      );
+
+      // العارض الأصلي للمتصفح يوفر Zoom وPinch Zoom
+      // حسب دعم المتصفح والجهاز.
+      pdfWindow.location.href = objectUrl;
     } catch (_) {
+      pdfWindow?.close();
+
       if (!mounted) return;
 
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
           SnackBar(
-            behavior:
-            SnackBarBehavior.floating,
-            backgroundColor:
-            AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.error,
             content: Text(
-              'تعذر تحميل ملف السيرة الذاتية. اضغط إعادة المحاولة.',
+              'تعذر فتح ملف السيرة الذاتية. اضغط إعادة المحاولة.',
               style: GoogleFonts.cairo(
                 color: Colors.white,
-                fontWeight:
-                FontWeight.w800,
+                fontWeight: FontWeight.w800,
               ),
             ),
           ),
@@ -177,7 +220,7 @@ class _CandidateCardState
             ),
 
             _CardFooter(
-              onOpen: _openDetails,
+              onOpen: _openPdfInBrowser,
             ),
           ],
         ),
@@ -515,11 +558,11 @@ class _CardFooter
         child: FilledButton.icon(
           onPressed: onOpen,
           icon: const Icon(
-            Icons.fullscreen_rounded,
+            Icons.open_in_new_rounded,
             size: 21,
           ),
           label: Text(
-            'عرض السيرة الذاتية',
+            'فتح السيرة الذاتية في المتصفح',
             style:
             GoogleFonts.cairo(
               fontSize: 13,
