@@ -64,7 +64,7 @@ class _CandidateCardState
     html.WindowBase? pdfWindow;
 
     try {
-      // نفتح التاب فور ضغط المستخدم حتى لا يمنعه Popup Blocker.
+      // افتح التبويب فور ضغط المستخدم حتى لا يمنعه Popup Blocker.
       pdfWindow = html.window.open(
         'about:blank',
         '_blank',
@@ -81,16 +81,13 @@ class _CandidateCardState
           ..hideCurrentSnackBar()
           ..showSnackBar(
             SnackBar(
-              behavior:
-              SnackBarBehavior.floating,
-              backgroundColor:
-              AppColors.error,
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: AppColors.error,
               content: Text(
                 'تعذر تحميل ملف السيرة الذاتية.',
                 style: GoogleFonts.cairo(
                   color: Colors.white,
-                  fontWeight:
-                  FontWeight.w800,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ),
@@ -99,15 +96,12 @@ class _CandidateCardState
         return;
       }
 
-      final bytes =
-      Uint8List.fromList(
+      final bytes = Uint8List.fromList(
         pdfBytes,
       );
 
       final blob = html.Blob(
-        <dynamic>[
-          bytes,
-        ],
+        <dynamic>[bytes],
         'application/pdf',
       );
 
@@ -116,8 +110,9 @@ class _CandidateCardState
         blob,
       );
 
-      pdfWindow.location.href =
-          objectUrl;
+      // العارض الأصلي للمتصفح يوفر Zoom وPinch Zoom
+      // حسب دعم المتصفح والجهاز.
+      pdfWindow.location.href = objectUrl;
     } catch (_) {
       pdfWindow?.close();
 
@@ -127,16 +122,13 @@ class _CandidateCardState
         ..hideCurrentSnackBar()
         ..showSnackBar(
           SnackBar(
-            behavior:
-            SnackBarBehavior.floating,
-            backgroundColor:
-            AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.error,
             content: Text(
               'تعذر فتح ملف السيرة الذاتية. اضغط إعادة المحاولة.',
               style: GoogleFonts.cairo(
                 color: Colors.white,
-                fontWeight:
-                FontWeight.w800,
+                fontWeight: FontWeight.w800,
               ),
             ),
           ),
@@ -223,15 +215,12 @@ class _CandidateCardState
               child: _PdfPreview(
                 pdfFuture:
                 _pdfFuture,
-                sourceName:
-                'cv_${widget.candidate.id}.pdf',
                 onRetry: _retry,
               ),
             ),
 
             _CardFooter(
-              onOpen:
-              _openPdfInBrowser,
+              onOpen: _openPdfInBrowser,
             ),
           ],
         ),
@@ -419,12 +408,10 @@ class _CardHeader
 class _PdfPreview
     extends StatelessWidget {
   final Future<List<int>> pdfFuture;
-  final String sourceName;
   final VoidCallback onRetry;
 
   const _PdfPreview({
     required this.pdfFuture,
-    required this.sourceName,
     required this.onRetry,
   });
 
@@ -532,11 +519,7 @@ class _PdfPreview
                 }
 
                 return InlinePdfPreview(
-                  key:
-                  ValueKey(sourceName),
                   bytes: bytes,
-                  sourceName:
-                  sourceName,
                   compact: true,
                 );
               },
