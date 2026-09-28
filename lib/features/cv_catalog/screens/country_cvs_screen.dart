@@ -30,11 +30,12 @@ class CountryCvsScreen extends StatelessWidget {
         AppLayout.maxContentWidth) /
         2
         : screenWidth < 600
-        ? 16.0
+        ? 12.0
         : 24.0;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor:
+      AppColors.background,
       body: Column(
         children: [
           const AppHeader(
@@ -70,7 +71,8 @@ class CountryCvsScreen extends StatelessWidget {
                     // ========================================
 
                     SliverToBoxAdapter(
-                      child: CountryBanner(
+                      child:
+                      CountryBanner(
                         isoCode:
                         country.flagCode,
                         name:
@@ -115,7 +117,8 @@ class CountryCvsScreen extends StatelessWidget {
                       SliverToBoxAdapter(
                         child:
                         PassportSearchField(
-                          value: state.filters
+                          value: state
+                              .filters
                               .passportNumber,
                         ),
                       ),
@@ -147,8 +150,7 @@ class CountryCvsScreen extends StatelessWidget {
                     // ========================================
 
                     if (state.cvsStatus ==
-                        LoadStatus
-                            .loading &&
+                        LoadStatus.loading &&
                         state.cvs.isEmpty)
                       const SliverFillRemaining(
                         hasScrollBody: false,
@@ -164,13 +166,14 @@ class CountryCvsScreen extends StatelessWidget {
 
                     else if (state
                         .cvsStatus ==
-                        LoadStatus
-                            .failure &&
+                        LoadStatus.failure &&
                         state.cvs.isEmpty)
                       SliverFillRemaining(
                         hasScrollBody: false,
-                        child: CvErrorState(
-                          message: state.error ??
+                        child:
+                        CvErrorState(
+                          message:
+                          state.error ??
                               'تعذر تحميل السير الذاتية',
                         ),
                       )
@@ -179,11 +182,11 @@ class CountryCvsScreen extends StatelessWidget {
                     // EMPTY
                     // ========================================
 
-                    else if (state
-                          .cvs.isEmpty)
+                    else if (state.cvs.isEmpty)
                         SliverFillRemaining(
                           hasScrollBody: false,
-                          child: CvEmptyState(
+                          child:
+                          CvEmptyState(
                             hasPassportSearch:
                             state
                                 .filters
@@ -194,7 +197,7 @@ class CountryCvsScreen extends StatelessWidget {
                         )
 
                       // ========================================
-                      // CV GRID
+                      // FRIENDLY CV GRID
                       // ========================================
 
                       else
@@ -206,7 +209,8 @@ class CountryCvsScreen extends StatelessWidget {
                             pagePadding,
                             28,
                           ),
-                          sliver: SliverGrid(
+                          sliver:
+                          SliverGrid(
                             delegate:
                             SliverChildBuilderDelegate(
                                   (
@@ -214,11 +218,11 @@ class CountryCvsScreen extends StatelessWidget {
                                   index,
                                   ) {
                                 final candidate =
-                                state.cvs[
-                                index];
+                                state.cvs[index];
 
                                 return CandidateCard(
-                                  key: ValueKey(
+                                  key:
+                                  ValueKey(
                                     candidate.id,
                                   ),
                                   candidate:
@@ -230,17 +234,18 @@ class CountryCvsScreen extends StatelessWidget {
                             ),
                             gridDelegate:
                             SliverGridDelegateWithMaxCrossAxisExtent(
+                              // كمبيوتر: أكثر من كارت في الصف
+                              // موبايل: كارت واحد بعرض الشاشة
                               maxCrossAxisExtent:
-                              700,
+                              430,
                               mainAxisExtent:
-                              screenWidth <
-                                  700
-                                  ? 790
-                                  : 870,
+                              screenWidth < 700
+                                  ? 610
+                                  : 640,
                               crossAxisSpacing:
-                              20,
+                              18,
                               mainAxisSpacing:
-                              20,
+                              18,
                             ),
                           ),
                         ),
@@ -257,7 +262,8 @@ class CountryCvsScreen extends StatelessWidget {
                       ),
                       sliver:
                       SliverToBoxAdapter(
-                        child: CvPagination(
+                        child:
+                        CvPagination(
                           state: state,
                         ),
                       ),
@@ -277,5 +283,3 @@ class CountryCvsScreen extends StatelessWidget {
     );
   }
 }
-
-
