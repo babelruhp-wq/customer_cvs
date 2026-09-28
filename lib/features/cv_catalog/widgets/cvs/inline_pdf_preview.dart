@@ -2,19 +2,24 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pdfrx/pdfrx.dart';
+import 'package:pdf/pdf.dart';
+import 'package:printing/printing.dart';
 
-/// PDF viewer مخصص لتجربة سلسة على الكمبيوتر والهاتف.
+/// عارض PDF من bytes تم تحميلها مسبقاً عن طريق Dio.
 ///
 /// السلوك:
-/// - الصفحات تحت بعض Vertical بشكل مستمر.
-/// - عند الوصول لنهاية الصفحة، يكمل مباشرة للصفحة التالية بالسحب لأعلى.
-/// - Pinch zoom بإصبعين على الهاتف.
-/// - Pan أفقي عند التكبير لرؤية جوانب الصفحة.
-/// - السحب الرأسي يظل رأسيًا قدر الإمكان.
-/// - Zoom + / -.
-/// - Mouse wheel على الكمبيوتر يعمل Scroll طبيعي.
-/// - Preload للصفحات القريبة لتقليل التقطيع أثناء القراءة.
+///
+/// Desktop / Web:
+/// - عجلة الماوس تعمل Scroll عادي داخل الـ PDF.
+/// - التكبير والتصغير من أزرار + و - فقط.
+/// - عجلة الماوس لا تعمل Zoom.
+/// - بعد التكبير يمكن سحب الـ PDF يمين / شمال / فوق / تحت.
+///
+/// Mobile:
+/// - Scroll عادي بإصبع واحد عند 100%.
+/// - Pinch Zoom بإصبعين.
+/// - التكبير والتصغير من أزرار + و -.
+/// - بعد التكبير يمكن سحب الجزء المكبر.
 class InlinePdfPreview extends StatefulWidget {
   final List<int> bytes;
   final bool compact;
@@ -26,186 +31,294 @@ class InlinePdfPreview extends StatefulWidget {
   });
 
   @override
-  State<InlinePdfPreview> createState() => _InlinePdfPreviewState();
+  State<InlinePdfPreview> createState() =>
+      _InlinePdfPreviewState();
 }
 
-class _InlinePdfPreviewState extends State<InlinePdfPreview> {
-  final PdfViewerController _controller = PdfViewerController();
+class _InlinePdfPreviewState
+    extends State<InlinePdfPreview> {
+  static const double _minScale = 1.0;
+  static const double _maxScale = 4.0;
+  static const double _scaleStep = 0.25;
 
-  int _currentPage = 1;
-  int _pageCount = 0;
-  double _zoom = 1.0;
+  final TransformationController
+  _transformationController =
+  TransformationController();
 
-  bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
+  double _scale = 1.0;
+
+  bool get _isZoomed =>
+      _scale > 1.01;
+
+  bool get _isTouchPlatform {
+    return defaultTargetPlatform ==
+        TargetPlatform.android ||
+        defaultTargetPlatform ==
+            TargetPlatform.iOS;
+  }
 
   @override
   void initState() {
     super.initState();
-    _controller.addListener(_onControllerChanged);
+
+    _transformationController
+        .addListener(
+      _onTransformChanged,
+    );
   }
 
   @override
   void dispose() {
-    _controller.removeListener(_onControllerChanged);
+    _transformationController
+        .removeListener(
+      _onTransformChanged,
+    );
+
+    _transformationController
+        .dispose();
+
     super.dispose();
   }
 
-  void _onControllerChanged() {
-    if (!_controller.isReady) return;
+  // =========================================================
+  // TRANSFORM CHANGE
+  // =========================================================
 
-    final zoom = _controller.currentZoom;
-    final page = _controller.pageNumber ?? _currentPage;
-    final count = _controller.pageCount;
+  void _onTransformChanged() {
+    final newScale =
+    _transformationController
+        .value
+        .getMaxScaleOnAxis()
+        .clamp(
+      _minScale,
+      _maxScale,
+    )
+        .toDouble();
 
-    if ((zoom - _zoom).abs() < .01 &&
-        page == _currentPage &&
-        count == _pageCount) {
+    if ((newScale - _scale).abs() <
+        .01) {
       return;
     }
 
-    if (!mounted) return;
-
     setState(() {
-      _zoom = zoom;
-      _currentPage = page;
-      _pageCount = count;
+      _scale = newScale;
     });
   }
 
-  Future<void> _zoomIn() async {
-    if (!_controller.isReady) return;
+  // =========================================================
+  // SET SCALE
+  // =========================================================
 
-    await _controller.zoomUp(
-      loop: false,
-      duration: const Duration(milliseconds: 180),
+  void _setScale(
+      double value,
+      ) {
+    final nextScale =
+    value
+        .clamp(
+      _minScale,
+      _maxScale,
+    )
+        .toDouble();
+
+    _transformationController
+        .value =
+        Matrix4.diagonal3Values(
+          nextScale,
+          nextScale,
+          1,
+        );
+  }
+
+  // =========================================================
+  // ZOOM IN
+  // =========================================================
+
+  void _zoomIn() {
+    _setScale(
+      _scale + _scaleStep,
     );
   }
 
-  Future<void> _zoomOut() async {
-    if (!_controller.isReady) return;
+  // =========================================================
+  // ZOOM OUT
+  // =========================================================
 
-    await _controller.zoomDown(
-      loop: false,
-      duration: const Duration(milliseconds: 180),
+  void _zoomOut() {
+    _setScale(
+      _scale - _scaleStep,
     );
   }
 
-  Future<void> _fitPageWidth() async {
-    if (!_controller.isReady) return;
+  // =========================================================
+  // RESET ZOOM
+  // =========================================================
 
-    final pageNumber = _controller.pageNumber ?? 1;
-    final matrix = _controller.calcMatrixFitWidthForPage(
-      pageNumber: pageNumber,
-    );
-
-    if (matrix == null) return;
-
-    await _controller.goTo(
-      matrix,
-      duration: const Duration(milliseconds: 200),
-    );
+  void _resetZoom() {
+    _transformationController
+        .value =
+        Matrix4.identity();
   }
+
+  // =========================================================
+  // BUILD
+  // =========================================================
 
   @override
-  Widget build(BuildContext context) {
-    if (widget.bytes.isEmpty) {
-      return const ColoredBox(
-        color: Color(0xFFF3F5F8),
-        child: Center(
-          child: Icon(
-            Icons.picture_as_pdf_outlined,
-            size: 34,
-            color: Color(0xFF98A2B3),
-          ),
-        ),
-      );
-    }
+  Widget build(
+      BuildContext context,
+      ) {
+    final pdfBytes =
+    Uint8List.fromList(
+      widget.bytes,
+    );
 
-    final pdfBytes = Uint8List.fromList(widget.bytes);
-
-    final ScrollPhysics scrollPhysics = _isIOS
-        ? const BouncingScrollPhysics(
-      parent: AlwaysScrollableScrollPhysics(),
-    )
-        : const ClampingScrollPhysics();
+    final touchZoomEnabled =
+        _isTouchPlatform;
 
     return ColoredBox(
-      color: const Color(0xFFF3F5F8),
+      color: const Color(
+        0xFFF3F5F8,
+      ),
       child: Stack(
         children: [
+          // ===============================================
+          // PDF VIEWER
+          // ===============================================
+
           Positioned.fill(
-            child: PdfViewer.data(
-              pdfBytes,
-              sourceName: 'cv_preview.pdf',
-              controller: _controller,
-              params: PdfViewerParams(
-                margin: widget.compact ? 6 : 10,
-                backgroundColor: const Color(0xFFF3F5F8),
+            child: InteractiveViewer(
+              transformationController:
+              _transformationController,
 
-                // السحب يتثبت غالبًا على اتجاه الحركة:
-                // رأسي للقراءة، وأفقي لرؤية الجوانب عند التكبير.
-                panAxis: PanAxis.aligned,
+              minScale: _minScale,
+              maxScale: _maxScale,
 
-                panEnabled: true,
-                scaleEnabled: true,
+              // ===========================================
+              // PINCH ZOOM
+              // ===========================================
+              //
+              // على الهاتف:
+              // التكبير بإصبعين شغال.
+              //
+              // على الكمبيوتر:
+              // الـ Mouse Wheel لا يعمل Zoom.
+              // التكبير فقط من + و -.
 
-                scrollPhysics: scrollPhysics,
-                scrollPhysicsScale: scrollPhysics,
+              scaleEnabled:
+              touchZoomEnabled,
 
-                // عجلة الماوس تعمل Scroll عادي.
-                scrollByMouseWheel: .20,
-                scrollHorizontallyByMouseWheel: false,
+              // يمنع الـ Trackpad / Mouse Wheel
+              // من التحول إلى Zoom.
 
-                // Preload للصفحات القريبة عشان الانتقال بينها يبقى سلس.
-                verticalCacheExtent: widget.compact ? 2.0 : 2.5,
-                horizontalCacheExtent: 1.0,
+              trackpadScrollCausesScale:
+              false,
 
-                pageAnchor: PdfPageAnchor.top,
-                pageAnchorEnd: PdfPageAnchor.bottom,
-                underflowAnchor: PdfPageAnchor.top,
+              // ===========================================
+              // PAN
+              // ===========================================
+              //
+              // عند 100%:
+              // الـ PDF يعمل Scroll طبيعي.
+              //
+              // بعد التكبير:
+              // يمكن سحب الصفحة في كل الاتجاهات
+              // سواء بالماوس أو اللمس.
 
-                limitRenderingCache: true,
+              panEnabled:
+              _isZoomed,
 
-                behaviorControlParams:
-                const PdfViewerBehaviorControlParams(
-                  enableLowResolutionPagePreview: true,
+              boundaryMargin:
+              const EdgeInsets.all(
+                200,
+              ),
+
+              clipBehavior:
+              Clip.hardEdge,
+
+              child: PdfPreview(
+                build: (_) async =>
+                pdfBytes,
+
+                initialPageFormat:
+                PdfPageFormat.a4,
+
+                canChangeOrientation:
+                false,
+
+                canChangePageFormat:
+                false,
+
+                canDebug:
+                false,
+
+                allowPrinting:
+                false,
+
+                allowSharing:
+                false,
+
+                useActions:
+                false,
+
+                maxPageWidth:
+                widget.compact
+                    ? 640
+                    : 1100,
+
+                loadingWidget:
+                const Center(
+                  child: SizedBox(
+                    width: 28,
+                    height: 28,
+                    child:
+                    CircularProgressIndicator(
+                      strokeWidth:
+                      2.4,
+                    ),
+                  ),
                 ),
-
-                onViewerReady: (
-                    document,
-                    controller,
-                    ) {
-                  if (!mounted) return;
-
-                  setState(() {
-                    _pageCount = controller.pageCount;
-                    _currentPage = controller.pageNumber ?? 1;
-                    _zoom = controller.currentZoom;
-                  });
-                },
-
-                onPageChanged: (pageNumber) {
-                  if (!mounted || pageNumber == null) return;
-
-                  setState(() {
-                    _currentPage = pageNumber;
-                  });
-                },
               ),
             ),
           ),
 
+          // ===============================================
+          // ZOOM CONTROLS
+          // ===============================================
+
           Positioned(
-            top: widget.compact ? 8 : 12,
-            left: widget.compact ? 8 : 12,
-            child: _ViewerControls(
-              compact: widget.compact,
-              zoom: _zoom,
-              currentPage: _currentPage,
-              pageCount: _pageCount,
-              onZoomOut: _zoomOut,
-              onZoomIn: _zoomIn,
-              onFitWidth: _fitPageWidth,
+            top:
+            widget.compact
+                ? 8
+                : 12,
+            left:
+            widget.compact
+                ? 8
+                : 12,
+            child: _ZoomControls(
+              scale:
+              _scale,
+
+              compact:
+              widget.compact,
+
+              canZoomIn:
+              _scale <
+                  _maxScale -
+                      .01,
+
+              canZoomOut:
+              _scale >
+                  _minScale +
+                      .01,
+
+              onZoomIn:
+              _zoomIn,
+
+              onZoomOut:
+              _zoomOut,
+
+              onReset:
+              _resetZoom,
             ),
           ),
         ],
@@ -214,102 +327,195 @@ class _InlinePdfPreviewState extends State<InlinePdfPreview> {
   }
 }
 
-class _ViewerControls extends StatelessWidget {
+// ==========================================================
+// ZOOM CONTROLS
+// ==========================================================
+
+class _ZoomControls
+    extends StatelessWidget {
+  final double scale;
   final bool compact;
-  final double zoom;
-  final int currentPage;
-  final int pageCount;
 
-  final VoidCallback onZoomOut;
+  final bool canZoomIn;
+  final bool canZoomOut;
+
   final VoidCallback onZoomIn;
-  final VoidCallback onFitWidth;
+  final VoidCallback onZoomOut;
+  final VoidCallback onReset;
 
-  const _ViewerControls({
+  const _ZoomControls({
+    required this.scale,
     required this.compact,
-    required this.zoom,
-    required this.currentPage,
-    required this.pageCount,
-    required this.onZoomOut,
+    required this.canZoomIn,
+    required this.canZoomOut,
     required this.onZoomIn,
-    required this.onFitWidth,
+    required this.onZoomOut,
+    required this.onReset,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final zoomPercent = (zoom * 100).round();
+  Widget build(
+      BuildContext context,
+      ) {
+    final percentage =
+    (scale * 100).round();
 
     return Material(
-      elevation: 5,
-      color: Colors.white.withValues(alpha: .95),
-      borderRadius: BorderRadius.circular(12),
+      color:
+      Colors.white.withValues(
+        alpha: .96,
+      ),
+
+      elevation: 4,
+
+      borderRadius:
+      BorderRadius.circular(
+        12,
+      ),
+
       child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: compact ? 4 : 6,
-          vertical: compact ? 3 : 5,
+        padding:
+        EdgeInsets.symmetric(
+          horizontal:
+          compact ? 4 : 6,
+          vertical:
+          compact ? 3 : 5,
         ),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+
+        decoration:
+        BoxDecoration(
+          borderRadius:
+          BorderRadius.circular(
+            12,
+          ),
+
           border: Border.all(
-            color: const Color(0xFFE5E7EB),
+            color: const Color(
+              0xFFE5E7EB,
+            ),
           ),
         ),
+
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize:
+          MainAxisSize.min,
           children: [
-            _ControlButton(
-              tooltip: 'تصغير',
-              icon: Icons.remove_rounded,
-              compact: compact,
-              onPressed: onZoomOut,
+            // =============================================
+            // ZOOM OUT
+            // =============================================
+
+            _ZoomButton(
+              tooltip:
+              'تصغير',
+
+              icon:
+              Icons.remove_rounded,
+
+              enabled:
+              canZoomOut,
+
+              compact:
+              compact,
+
+              onPressed:
+              onZoomOut,
             ),
+
+            // =============================================
+            // SCALE PERCENTAGE
+            // =============================================
 
             InkWell(
-              onTap: onFitWidth,
-              borderRadius: BorderRadius.circular(8),
+              onTap:
+              onReset,
+
+              borderRadius:
+              BorderRadius.circular(
+                8,
+              ),
+
               child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: compact ? 6 : 8,
-                  vertical: compact ? 5 : 7,
+                padding:
+                EdgeInsets.symmetric(
+                  horizontal:
+                  compact
+                      ? 6
+                      : 9,
+
+                  vertical:
+                  compact
+                      ? 5
+                      : 7,
                 ),
+
                 child: Text(
-                  '$zoomPercent%',
-                  style: TextStyle(
-                    color: const Color(0xFF2C334A),
-                    fontSize: compact ? 10 : 11,
-                    fontWeight: FontWeight.w800,
+                  '$percentage%',
+
+                  style:
+                  TextStyle(
+                    color:
+                    const Color(
+                      0xFF2C334A,
+                    ),
+
+                    fontSize:
+                    compact
+                        ? 10
+                        : 11,
+
+                    fontWeight:
+                    FontWeight.w800,
                   ),
                 ),
               ),
             ),
 
-            _ControlButton(
-              tooltip: 'تكبير',
-              icon: Icons.add_rounded,
-              compact: compact,
-              onPressed: onZoomIn,
+            // =============================================
+            // ZOOM IN
+            // =============================================
+
+            _ZoomButton(
+              tooltip:
+              'تكبير',
+
+              icon:
+              Icons.add_rounded,
+
+              enabled:
+              canZoomIn,
+
+              compact:
+              compact,
+
+              onPressed:
+              onZoomIn,
             ),
 
-            if (pageCount > 1) ...[
-              const SizedBox(width: 4),
-              Container(
-                width: 1,
-                height: 18,
-                color: const Color(0xFFE5E7EB),
+            // =============================================
+            // RESET
+            // =============================================
+
+            if (!compact) ...[
+              const SizedBox(
+                width: 3,
               ),
-              const SizedBox(width: 4),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 5,
-                ),
-                child: Text(
-                  '$currentPage / $pageCount',
-                  textDirection: TextDirection.ltr,
-                  style: TextStyle(
-                    color: const Color(0xFF667085),
-                    fontSize: compact ? 9 : 10,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+
+              _ZoomButton(
+                tooltip:
+                'الحجم الطبيعي',
+
+                icon:
+                Icons
+                    .restart_alt_rounded,
+
+                enabled:
+                scale > 1.01,
+
+                compact:
+                compact,
+
+                onPressed:
+                onReset,
               ),
             ],
           ],
@@ -319,34 +525,68 @@ class _ViewerControls extends StatelessWidget {
   }
 }
 
-class _ControlButton extends StatelessWidget {
+// ==========================================================
+// ZOOM BUTTON
+// ==========================================================
+
+class _ZoomButton
+    extends StatelessWidget {
   final String tooltip;
   final IconData icon;
+
+  final bool enabled;
   final bool compact;
+
   final VoidCallback onPressed;
 
-  const _ControlButton({
+  const _ZoomButton({
     required this.tooltip,
     required this.icon,
+    required this.enabled,
     required this.compact,
     required this.onPressed,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+      BuildContext context,
+      ) {
     return Tooltip(
-      message: tooltip,
+      message:
+      tooltip,
+
       child: IconButton(
-        onPressed: onPressed,
-        padding: EdgeInsets.zero,
-        visualDensity: VisualDensity.compact,
-        constraints: BoxConstraints.tightFor(
-          width: compact ? 30 : 34,
-          height: compact ? 30 : 34,
+        onPressed:
+        enabled
+            ? onPressed
+            : null,
+
+        constraints:
+        BoxConstraints.tightFor(
+          width:
+          compact
+              ? 30
+              : 34,
+
+          height:
+          compact
+              ? 30
+              : 34,
         ),
+
+        padding:
+        EdgeInsets.zero,
+
+        visualDensity:
+        VisualDensity.compact,
+
         icon: Icon(
           icon,
-          size: compact ? 17 : 19,
+
+          size:
+          compact
+              ? 17
+              : 19,
         ),
       ),
     );
