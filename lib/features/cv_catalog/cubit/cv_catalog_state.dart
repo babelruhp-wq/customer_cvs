@@ -2,11 +2,8 @@ import 'package:equatable/equatable.dart';
 
 import '../models/candidate_cv_model.dart';
 import '../models/country_model.dart';
+import '../models/cv_catalog_type.dart';
 import '../models/cv_filters.dart';
-
-// ==========================================================
-// LOAD STATUS
-// ==========================================================
 
 enum LoadStatus {
   initial,
@@ -15,18 +12,14 @@ enum LoadStatus {
   failure,
 }
 
-// ==========================================================
-// CV CATALOG STATE
-// ==========================================================
-
 class CvCatalogState extends Equatable {
+  final CvCatalogType catalogType;
+
   final LoadStatus countriesStatus;
   final LoadStatus cvsStatus;
 
   final List<CountryModel> countries;
-
   final CountryModel? selectedCountry;
-
   final List<CandidateCvModel> cvs;
 
   final CvFilters filters;
@@ -40,6 +33,7 @@ class CvCatalogState extends Equatable {
   final String? error;
 
   const CvCatalogState({
+    this.catalogType = CvCatalogType.recruitment,
     this.countriesStatus = LoadStatus.initial,
     this.cvsStatus = LoadStatus.initial,
     this.countries = const [],
@@ -53,85 +47,54 @@ class CvCatalogState extends Equatable {
     this.error,
   });
 
-  // ==========================================================
-  // COPY WITH
-  // ==========================================================
-
   CvCatalogState copyWith({
+    CvCatalogType? catalogType,
     LoadStatus? countriesStatus,
     LoadStatus? cvsStatus,
-
     List<CountryModel>? countries,
-
     CountryModel? selectedCountry,
     bool clearSelectedCountry = false,
-
     List<CandidateCvModel>? cvs,
-
     CvFilters? filters,
-
     int? page,
     int? pageSize,
-
     int? totalCount,
     int? totalPages,
-
     String? error,
     bool clearError = false,
   }) {
     return CvCatalogState(
+      catalogType: catalogType ?? this.catalogType,
       countriesStatus:
-      countriesStatus ?? this.countriesStatus,
-
-      cvsStatus:
-      cvsStatus ?? this.cvsStatus,
-
-      countries:
-      countries ?? this.countries,
-
+          countriesStatus ?? this.countriesStatus,
+      cvsStatus: cvsStatus ?? this.cvsStatus,
+      countries: countries ?? this.countries,
       selectedCountry: clearSelectedCountry
           ? null
           : selectedCountry ?? this.selectedCountry,
-
-      cvs:
-      cvs ?? this.cvs,
-
-      filters:
-      filters ?? this.filters,
-
-      page:
-      page ?? this.page,
-
-      pageSize:
-      pageSize ?? this.pageSize,
-
-      totalCount:
-      totalCount ?? this.totalCount,
-
-      totalPages:
-      totalPages ?? this.totalPages,
-
-      error:
-      clearError ? null : error ?? this.error,
+      cvs: cvs ?? this.cvs,
+      filters: filters ?? this.filters,
+      page: page ?? this.page,
+      pageSize: pageSize ?? this.pageSize,
+      totalCount: totalCount ?? this.totalCount,
+      totalPages: totalPages ?? this.totalPages,
+      error: clearError ? null : error ?? this.error,
     );
   }
 
-  // ==========================================================
-  // EQUATABLE
-  // ==========================================================
-
   @override
   List<Object?> get props => [
-    countriesStatus,
-    cvsStatus,
-    countries,
-    selectedCountry,
-    cvs,
-    filters,
-    page,
-    pageSize,
-    totalCount,
-    totalPages,
-    error,
-  ];
+        catalogType,
+        countriesStatus,
+        cvsStatus,
+        countries,
+        selectedCountry,
+        cvs,
+        filters,
+        page,
+        pageSize,
+        totalCount,
+        totalPages,
+        error,
+      ];
 }

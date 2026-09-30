@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../models/country_model.dart';
+import '../models/cv_catalog_type.dart';
 import '../models/cv_filters.dart';
 import '../repository/cv_catalog_repository.dart';
 import 'cv_catalog_state.dart';
@@ -8,32 +9,45 @@ import 'cv_catalog_state.dart';
 class CvCatalogCubit extends Cubit<CvCatalogState> {
   final CvCatalogRepository repository;
 
-  /// Prevents an older request from replacing a newer result.
   int _requestToken = 0;
 
   CvCatalogCubit(
-      this.repository,
-      ) : super(
-    const CvCatalogState(),
-  );
+    this.repository,
+  ) : super(
+          const CvCatalogState(),
+        );
 
-  // =========================================================
-  // COUNTRIES
-  // =========================================================
+  Future<void> loadCountries({
+    required CvCatalogType catalogType,
+  }) async {
+    _requestToken++;
 
-  Future<void> loadCountries() async {
     emit(
       state.copyWith(
+        catalogType: catalogType,
         countriesStatus: LoadStatus.loading,
+        cvsStatus: LoadStatus.initial,
+        countries: const [],
+        clearSelectedCountry: true,
+        cvs: const [],
+        filters: const CvFilters(),
+        page: 1,
+        totalCount: 0,
+        totalPages: 1,
         clearError: true,
       ),
     );
 
     try {
       final countries =
-      await repository.getCountries();
+          await repository.getCountries(
+        catalogType: catalogType,
+      );
 
-      if (isClosed) return;
+      if (isClosed ||
+          state.catalogType != catalogType) {
+        return;
+      }
 
       emit(
         state.copyWith(
@@ -43,25 +57,24 @@ class CvCatalogCubit extends Cubit<CvCatalogState> {
         ),
       );
     } catch (_) {
-      if (isClosed) return;
+      if (isClosed ||
+          state.catalogType != catalogType) {
+        return;
+      }
 
       emit(
         state.copyWith(
           countriesStatus: LoadStatus.failure,
           error:
-          'تعذر تحميل الدول حاليًا. حاول مرة أخرى.',
+              'تعذر تحميل الدول حاليًا. حاول مرة أخرى.',
         ),
       );
     }
   }
 
-  // =========================================================
-  // SELECT COUNTRY
-  // =========================================================
-
   void selectCountry(
-      CountryModel country,
-      ) {
+    CountryModel country,
+  ) {
     emit(
       state.copyWith(
         selectedCountry: country,
@@ -77,23 +90,17 @@ class CvCatalogCubit extends Cubit<CvCatalogState> {
     loadCvs();
   }
 
-  // =========================================================
-  // LOAD CVS
-  // =========================================================
-
   Future<void> loadCvs({
     bool showLoader = true,
     bool refresh = false,
   }) async {
-    final country =
-        state.selectedCountry;
+    final country = state.selectedCountry;
 
     if (country == null) {
       return;
     }
 
-    final token =
-    ++_requestToken;
+    final token = ++_requestToken;
 
     if (refresh) {
       repository.clearCountryCache(
@@ -112,7 +119,7 @@ class CvCatalogCubit extends Cubit<CvCatalogState> {
 
     try {
       final result =
-      await repository.getCvs(
+          await repository.getCvs(
         countryId: country.id,
         filters: state.filters,
         page: state.page,
@@ -129,12 +136,11 @@ class CvCatalogCubit extends Cubit<CvCatalogState> {
           cvsStatus: LoadStatus.success,
           cvs: result.items,
           page: result.page,
-          totalCount:
-          result.totalCount,
+          totalCount: result.totalCount,
           totalPages:
-          result.totalPages < 1
-              ? 1
-              : result.totalPages,
+              result.totalPages < 1
+                  ? 1
+                  : result.totalPages,
           clearError: true,
         ),
       );
@@ -148,35 +154,25 @@ class CvCatalogCubit extends Cubit<CvCatalogState> {
         state.copyWith(
           cvsStatus: LoadStatus.failure,
           error:
-          'تعذر تحميل السير الذاتية حاليًا. حاول مرة أخرى.',
+              'تعذر تحميل السير الذاتية حاليًا. حاول مرة أخرى.',
         ),
       );
     }
   }
 
-  // =========================================================
-  // PDF
-  // =========================================================
-
   Future<List<int>> getCvPdf(
-      String cvId,
-      ) {
+    String cvId,
+  ) {
     return repository.getCvPdf(
       cvId,
     );
   }
 
-  // =========================================================
-  // SEARCH BY PASSPORT NUMBER
-  // =========================================================
-
   Future<void> setPassportSearch(
-      String value,
-      ) async {
+    String value,
+  ) async {
     final passportNumber =
-    value
-        .trim()
-        .toUpperCase();
+        value.trim().toUpperCase();
 
     if (passportNumber ==
         state.filters.passportNumber) {
@@ -185,10 +181,8 @@ class CvCatalogCubit extends Cubit<CvCatalogState> {
 
     emit(
       state.copyWith(
-        filters:
-        state.filters.copyWith(
-          passportNumber:
-          passportNumber,
+        filters: state.filters.copyWith(
+          passportNumber: passportNumber,
         ),
         page: 1,
       ),
@@ -199,13 +193,9 @@ class CvCatalogCubit extends Cubit<CvCatalogState> {
     );
   }
 
-  // =========================================================
-  // RELIGION
-  // =========================================================
-
   Future<void> setReligion(
-      ReligionFilter value,
-      ) async {
+    ReligionFilter value,
+  ) async {
     if (value ==
         state.filters.religion) {
       return;
@@ -213,8 +203,7 @@ class CvCatalogCubit extends Cubit<CvCatalogState> {
 
     emit(
       state.copyWith(
-        filters:
-        state.filters.copyWith(
+        filters: state.filters.copyWith(
           religion: value,
         ),
         page: 1,
@@ -226,13 +215,9 @@ class CvCatalogCubit extends Cubit<CvCatalogState> {
     );
   }
 
-  // =========================================================
-  // EXPERIENCE
-  // =========================================================
-
   Future<void> setExperience(
-      ExperienceFilter value,
-      ) async {
+    ExperienceFilter value,
+  ) async {
     if (value ==
         state.filters.experience) {
       return;
@@ -240,8 +225,7 @@ class CvCatalogCubit extends Cubit<CvCatalogState> {
 
     emit(
       state.copyWith(
-        filters:
-        state.filters.copyWith(
+        filters: state.filters.copyWith(
           experience: value,
         ),
         page: 1,
@@ -253,15 +237,10 @@ class CvCatalogCubit extends Cubit<CvCatalogState> {
     );
   }
 
-  // =========================================================
-  // RESET
-  // =========================================================
-
   Future<void> resetFilters() async {
     emit(
       state.copyWith(
-        filters:
-        const CvFilters(),
+        filters: const CvFilters(),
         page: 1,
       ),
     );
@@ -271,28 +250,22 @@ class CvCatalogCubit extends Cubit<CvCatalogState> {
     );
   }
 
-  // =========================================================
-  // PAGINATION
-  // =========================================================
-
   Future<void> setPage(
-      int page,
-      ) async {
+    int page,
+  ) async {
     final maxPage =
-    state.totalPages < 1
-        ? 1
-        : state.totalPages;
+        state.totalPages < 1
+            ? 1
+            : state.totalPages;
 
-    final safePage =
-    page
+    final safePage = page
         .clamp(
-      1,
-      maxPage,
-    )
+          1,
+          maxPage,
+        )
         .toInt();
 
-    if (safePage ==
-        state.page) {
+    if (safePage == state.page) {
       return;
     }
 

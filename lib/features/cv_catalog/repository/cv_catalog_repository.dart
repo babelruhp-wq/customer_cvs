@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../models/candidate_cv_model.dart';
 import '../models/country_model.dart';
+import '../models/cv_catalog_type.dart';
 import '../models/cv_filters.dart';
 import '../models/paged_result.dart';
 import '../services/cv_catalog_service.dart';
@@ -21,9 +22,6 @@ class CvCatalogRepository {
         baseUrl: baseUrl,
         connectTimeout: const Duration(seconds: 20),
         receiveTimeout: const Duration(seconds: 30),
-
-        // Do not set sendTimeout globally for GET requests on Flutter Web.
-        // Dio warns because GET requests have no request body to send.
         headers: defaultHeaders,
       ),
     );
@@ -35,8 +33,12 @@ class CvCatalogRepository {
     );
   }
 
-  Future<List<CountryModel>> getCountries() {
-    return service.fetchCountries();
+  Future<List<CountryModel>> getCountries({
+    required CvCatalogType catalogType,
+  }) {
+    return service.fetchCountries(
+      catalogType: catalogType,
+    );
   }
 
   Future<PagedResult<CandidateCvModel>> getCvs({
@@ -54,16 +56,16 @@ class CvCatalogRepository {
   }
 
   Future<List<int>> getCvPdf(
-      String cvId,
-      ) {
+    String cvId,
+  ) {
     return service.fetchCvPdf(
       cvId,
     );
   }
 
   void clearCountryCache(
-      String countryId,
-      ) {
+    String countryId,
+  ) {
     service.clearCountryCache(
       countryId,
     );

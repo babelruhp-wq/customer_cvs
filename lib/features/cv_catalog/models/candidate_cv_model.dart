@@ -1,10 +1,6 @@
 import 'package:equatable/equatable.dart';
 
 class CandidateCvModel extends Equatable {
-  /// Internal identifier only.
-  /// Never displayed to the customer.
-  /// Used only to request:
-  /// /CVsViewer/GetCVPdfInline/{cvId}
   final String id;
 
   final String passportNumber;
@@ -12,47 +8,49 @@ class CandidateCvModel extends Equatable {
   final bool isMuslim;
   final num salary;
 
+  /// Used by service-transfer CVs.
+  /// The recruitment flow simply ignores this field.
+  final num priceForTransfer;
+
   const CandidateCvModel({
     required this.id,
     required this.passportNumber,
     required this.isExperienced,
     required this.isMuslim,
     required this.salary,
+    required this.priceForTransfer,
   });
 
   factory CandidateCvModel.fromJson(
-      Map<String, dynamic> json,
-      ) {
+    Map<String, dynamic> json,
+  ) {
     return CandidateCvModel(
       id: _string(
         json['id'],
       ),
-
-      // الـAPI الحالي بيرجع passportnumber
-      // وضفنا passportNumber كـ fallback
       passportNumber: _string(
         json['passportnumber'] ??
             json['passportNumber'],
       ).toUpperCase(),
-
       isExperienced: _asBool(
         json['isExperienced'],
       ),
-
       isMuslim: _asBool(
         json['isMuslim'],
       ),
-
       salary: _asNum(
         json['salary'],
+      ),
+      priceForTransfer: _asNum(
+        json['priceForTransfer'] ??
+            json['transferPrice'] ??
+            json['price'],
       ),
     );
   }
 
   String get religionLabel =>
-      isMuslim
-          ? 'مسلمة'
-          : 'غير مسلمة';
+      isMuslim ? 'مسلمة' : 'غير مسلمة';
 
   String get experienceLabel =>
       isExperienced
@@ -65,17 +63,14 @@ class CandidateCvModel extends Equatable {
           : passportNumber;
 
   static String _string(
-      dynamic value,
-      ) {
-    return value
-        ?.toString()
-        .trim() ??
-        '';
+    dynamic value,
+  ) {
+    return value?.toString().trim() ?? '';
   }
 
   static bool _asBool(
-      dynamic value,
-      ) {
+    dynamic value,
+  ) {
     if (value is bool) {
       return value;
     }
@@ -94,24 +89,25 @@ class CandidateCvModel extends Equatable {
   }
 
   static num _asNum(
-      dynamic value,
-      ) {
+    dynamic value,
+  ) {
     if (value is num) {
       return value;
     }
 
     return num.tryParse(
-      value?.toString() ?? '',
-    ) ??
+          value?.toString() ?? '',
+        ) ??
         0;
   }
 
   @override
   List<Object?> get props => [
-    id,
-    passportNumber,
-    isExperienced,
-    isMuslim,
-    salary,
-  ];
+        id,
+        passportNumber,
+        isExperienced,
+        isMuslim,
+        salary,
+        priceForTransfer,
+      ];
 }

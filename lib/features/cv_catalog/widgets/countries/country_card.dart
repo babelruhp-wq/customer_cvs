@@ -7,11 +7,13 @@ import '../../models/country_model.dart';
 
 class CountryCard extends StatefulWidget {
   final CountryModel country;
+  final bool showRecruitmentPrice;
   final VoidCallback onTap;
 
   const CountryCard({
     super.key,
     required this.country,
+    required this.showRecruitmentPrice,
     required this.onTap,
   });
 
@@ -358,160 +360,161 @@ class _CountryCardState extends State<CountryCard> {
                     // PRICE
                     // ======================================
 
-                    Container(
-                      padding:
-                      const EdgeInsets
-                          .fromLTRB(
-                        14,
-                        12,
-                        14,
-                        12,
-                      ),
-                      decoration:
-                      BoxDecoration(
-                        color: AppColors
-                            .secondaryFaint,
-                        borderRadius:
-                        BorderRadius
-                            .circular(
-                          15,
+                    if (widget.showRecruitmentPrice)
+                      Container(
+                        padding:
+                        const EdgeInsets
+                            .fromLTRB(
+                          14,
+                          12,
+                          14,
+                          12,
                         ),
-                        border:
-                        Border.all(
+                        decoration:
+                        BoxDecoration(
                           color: AppColors
-                              .secondary
-                              .withValues(
-                            alpha: .25,
+                              .secondaryFaint,
+                          borderRadius:
+                          BorderRadius
+                              .circular(
+                            15,
                           ),
-                          width: 1.2,
+                          border:
+                          Border.all(
+                            color: AppColors
+                                .secondary
+                                .withValues(
+                              alpha: .25,
+                            ),
+                            width: 1.2,
+                          ),
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 43,
-                            height: 43,
-                            decoration:
-                            BoxDecoration(
-                              color: AppColors
-                                  .secondarySoft,
-                              borderRadius:
-                              BorderRadius
-                                  .circular(
-                                12,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 43,
+                              height: 43,
+                              decoration:
+                              BoxDecoration(
+                                color: AppColors
+                                    .secondarySoft,
+                                borderRadius:
+                                BorderRadius
+                                    .circular(
+                                  12,
+                                ),
+                              ),
+                              alignment:
+                              Alignment
+                                  .center,
+                              child:
+                              const Icon(
+                                Icons
+                                    .payments_outlined,
+                                color: AppColors
+                                    .secondaryDark,
+                                size: 21,
                               ),
                             ),
-                            alignment:
-                            Alignment
-                                .center,
-                            child:
-                            const Icon(
-                              Icons
-                                  .payments_outlined,
-                              color: AppColors
-                                  .secondaryDark,
-                              size: 21,
+
+                            const SizedBox(
+                              width: 11,
                             ),
-                          ),
 
-                          const SizedBox(
-                            width: 11,
-                          ),
-
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment
-                                  .start,
-                              children: [
-                                Text(
-                                  'سعر الاستقدام',
-                                  style:
-                                  GoogleFonts
-                                      .cairo(
-                                    color: AppColors
-                                        .textSecondary,
-                                    fontSize:
-                                    11,
-                                    fontWeight:
-                                    FontWeight
-                                        .w700,
-                                  ),
-                                ),
-
-                                const SizedBox(
-                                  height: 1,
-                                ),
-
-                                Text(
-                                  _formatPrice(
-                                    country.price,
-                                  ),
-                                  textDirection:
-                                  TextDirection
-                                      .rtl,
-                                  style:
-                                  GoogleFonts
-                                      .cairo(
-                                    color: AppColors
-                                        .primary,
-                                    fontSize:
-                                    19,
-                                    height: 1.35,
-                                    fontWeight:
-                                    FontWeight
-                                        .w900,
-                                  ),
-                                ),
-
-                                const SizedBox(
-                                  height: 3,
-                                ),
-
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons
-                                          .verified_outlined,
-                                      size: 13,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                CrossAxisAlignment
+                                    .start,
+                                children: [
+                                  Text(
+                                    'سعر الاستقدام',
+                                    style:
+                                    GoogleFonts
+                                        .cairo(
                                       color: AppColors
-                                          .secondaryDark,
+                                          .textSecondary,
+                                      fontSize:
+                                      11,
+                                      fontWeight:
+                                      FontWeight
+                                          .w700,
                                     ),
+                                  ),
 
-                                    const SizedBox(
-                                      width: 4,
+                                  const SizedBox(
+                                    height: 1,
+                                  ),
+
+                                  Text(
+                                    _formatPrice(
+                                      country.price,
                                     ),
+                                    textDirection:
+                                    TextDirection
+                                        .rtl,
+                                    style:
+                                    GoogleFonts
+                                        .cairo(
+                                      color: AppColors
+                                          .primary,
+                                      fontSize:
+                                      19,
+                                      height: 1.35,
+                                      fontWeight:
+                                      FontWeight
+                                          .w900,
+                                    ),
+                                  ),
 
-                                    Expanded(
-                                      child:
-                                      Text(
-                                        'شامل ضريبة القيمة المضافة',
-                                        maxLines:
-                                        1,
-                                        overflow:
-                                        TextOverflow
-                                            .ellipsis,
-                                        style:
-                                        GoogleFonts
-                                            .cairo(
-                                          color: AppColors
-                                              .secondaryDark,
-                                          fontSize:
-                                          10.5,
-                                          fontWeight:
-                                          FontWeight
-                                              .w800,
+                                  const SizedBox(
+                                    height: 3,
+                                  ),
+
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons
+                                            .verified_outlined,
+                                        size: 13,
+                                        color: AppColors
+                                            .secondaryDark,
+                                      ),
+
+                                      const SizedBox(
+                                        width: 4,
+                                      ),
+
+                                      Expanded(
+                                        child:
+                                        Text(
+                                          'شامل ضريبة القيمة المضافة',
+                                          maxLines:
+                                          1,
+                                          overflow:
+                                          TextOverflow
+                                              .ellipsis,
+                                          style:
+                                          GoogleFonts
+                                              .cairo(
+                                            color: AppColors
+                                                .secondaryDark,
+                                            fontSize:
+                                            10.5,
+                                            fontWeight:
+                                            FontWeight
+                                                .w800,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
 
                     const Spacer(),
 

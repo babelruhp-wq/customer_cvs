@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_theme.dart';
 import '../cubit/cv_catalog_cubit.dart';
 import '../cubit/cv_catalog_state.dart';
+import '../models/cv_catalog_type.dart';
 import '../widgets/shared/app_header.dart';
 import '../widgets/cvs/candidate_card.dart';
 import '../widgets/cvs/country_banner.dart';
@@ -227,6 +228,9 @@ class CountryCvsScreen extends StatelessWidget {
                                   ),
                                   candidate:
                                   candidate,
+                                  showTransferPrice:
+                                  state.catalogType ==
+                                      CvCatalogType.serviceTransfer,
                                 );
                               },
                               childCount:

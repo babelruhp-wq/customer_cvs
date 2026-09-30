@@ -12,10 +12,12 @@ import 'cv_pdf_viewer.dart';
 
 class CandidateCard extends StatefulWidget {
   final CandidateCvModel candidate;
+  final bool showTransferPrice;
 
   const CandidateCard({
     super.key,
     required this.candidate,
+    this.showTransferPrice = false,
   });
 
   @override
@@ -112,14 +114,14 @@ class _CandidateCardState extends State<CandidateCard> {
       );
   }
 
-  String _salaryText(num salary) {
-    final value = salary.toDouble();
+  String _moneyText(num amount) {
+    final value = amount.toDouble();
 
     if (value == value.roundToDouble()) {
       return '${value.toInt()} ريال';
     }
 
-    return '$salary ريال';
+    return '${value.toStringAsFixed(2)} ريال';
   }
 
   @override
@@ -171,9 +173,15 @@ class _CandidateCardState extends State<CandidateCard> {
           children: [
             _CardHeader(
               candidate: candidate,
-              salaryText: _salaryText(
+              salaryText: _moneyText(
                 candidate.salary,
               ),
+              transferPriceText:
+                  widget.showTransferPrice
+                      ? _moneyText(
+                          candidate.priceForTransfer,
+                        )
+                      : null,
             ),
 
             Expanded(
@@ -204,10 +212,12 @@ class _CandidateCardState extends State<CandidateCard> {
 class _CardHeader extends StatelessWidget {
   final CandidateCvModel candidate;
   final String salaryText;
+  final String? transferPriceText;
 
   const _CardHeader({
     required this.candidate,
     required this.salaryText,
+    required this.transferPriceText,
   });
 
   @override
@@ -298,6 +308,13 @@ class _CardHeader extends StatelessWidget {
                 icon: Icons.payments_outlined,
                 value: salaryText,
               ),
+              if (transferPriceText != null)
+                _CompactInfo(
+                  icon: Icons.swap_horiz_rounded,
+                  value:
+                      'سعر النقل: $transferPriceText',
+                  highlight: true,
+                ),
             ],
           ),
         ],
@@ -532,10 +549,12 @@ class _CardFooter extends StatelessWidget {
 class _CompactInfo extends StatelessWidget {
   final IconData icon;
   final String value;
+  final bool highlight;
 
   const _CompactInfo({
     required this.icon,
     required this.value,
+    this.highlight = false,
   });
 
   @override
@@ -546,10 +565,16 @@ class _CompactInfo extends StatelessWidget {
         vertical: 6,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surfaceStrong,
+        color: highlight
+            ? AppColors.secondaryFaint
+            : AppColors.surfaceStrong,
         borderRadius: BorderRadius.circular(999),
         border: Border.all(
-          color: AppColors.border,
+          color: highlight
+              ? AppColors.secondary.withValues(
+                  alpha: .30,
+                )
+              : AppColors.border,
         ),
       ),
       child: Row(
@@ -558,15 +583,21 @@ class _CompactInfo extends StatelessWidget {
           Icon(
             icon,
             size: 14,
-            color: AppColors.primary,
+            color: highlight
+                ? AppColors.secondaryDark
+                : AppColors.primary,
           ),
           const SizedBox(width: 5),
           Text(
             value,
             style: GoogleFonts.cairo(
-              color: AppColors.textPrimary,
+              color: highlight
+                  ? AppColors.secondaryDark
+                  : AppColors.textPrimary,
               fontSize: 10.5,
-              fontWeight: FontWeight.w700,
+              fontWeight: highlight
+                  ? FontWeight.w900
+                  : FontWeight.w700,
             ),
           ),
         ],

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../models/candidate_cv_model.dart';
 import '../models/country_model.dart';
+import '../models/cv_catalog_type.dart';
 import '../models/cv_filters.dart';
 import '../models/paged_result.dart';
 import 'cv_catalog_service.dart';
@@ -9,6 +10,9 @@ import 'cv_catalog_service.dart';
 class DioCvCatalogService implements CvCatalogService {
   static const String countriesPath =
       '/CVsViewer/GetAllCVsViewerCountries';
+
+  static const String transferCountriesPath =
+      '/CVsViewer/GetAllCVsViewerCountries/Transfer';
 
   static const String countryCvsPath =
       '/CVsViewer/GetViewerCVsByCountryId';
@@ -40,10 +44,16 @@ class DioCvCatalogService implements CvCatalogService {
 
   @override
   Future<List<CountryModel>>
-  fetchCountries() async {
+  fetchCountries({
+    required CvCatalogType catalogType,
+  }) async {
+    final path = catalogType.isServiceTransfer
+        ? transferCountriesPath
+        : countriesPath;
+
     final response =
     await dio.get(
-      countriesPath,
+      path,
     );
 
     final raw = response.data;

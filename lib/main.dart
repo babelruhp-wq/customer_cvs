@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/theme/app_theme.dart';
 import 'features/cv_catalog/cubit/cv_catalog_cubit.dart';
 import 'features/cv_catalog/repository/cv_catalog_repository.dart';
-import 'features/cv_catalog/screens/countries_screen.dart';
+import 'features/cv_catalog/screens/catalog_home_screen.dart';
 
 // ==========================================================
 // BASE URL
@@ -40,9 +40,7 @@ class BabelCvCatalogApp extends StatelessWidget {
     return RepositoryProvider.value(
       value: repository,
       child: BlocProvider(
-        create: (_) =>
-        CvCatalogCubit(repository)
-          ..loadCountries(),
+        create: (_) => CvCatalogCubit(repository),
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'بابل الرياض للاستقدام',
@@ -51,12 +49,10 @@ class BabelCvCatalogApp extends StatelessWidget {
           builder: (context, child) {
             return Directionality(
               textDirection: TextDirection.rtl,
-              child:
-              child ??
-                  const SizedBox.shrink(),
+              child: child ?? const SizedBox.shrink(),
             );
           },
-          home: const CountriesScreen(),
+          home: const CatalogHomeScreen(),
         ),
       ),
     );
